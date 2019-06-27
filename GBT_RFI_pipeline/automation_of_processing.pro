@@ -4,7 +4,7 @@
 
 PRO automation_of_processing
     ; Read in the data gleaned from determine_new_RFI_files.py
-    parameters = READ_CSV('subdata.csv',HEADER=header_names)
+    parameters = READ_CSV('RFI_file_parameters.csv',HEADER=header_names)
 
     ; Make arrays of the required ymax value containing the receivers that use that ymax value
     ymax_rcvr_list_100 = MAKE_ARRAY(dimension=1,/STRING)
