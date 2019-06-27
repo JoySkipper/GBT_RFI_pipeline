@@ -2,7 +2,7 @@
 @/users/rmaddale/mypros/vectorTcals/scalUtils.pro
 @/users/rmaddale/mypros/rfiDisplay.pro
 
-pro automation_of_processing
+PRO automation_of_processing
     ; Read in the data gleaned from determine_new_RFI_files.py
     parameters = READ_CSV('subdata.csv',HEADER=header_names)
 
@@ -65,4 +65,4 @@ pro automation_of_processing
             ENDELSE
         ENDFOR
     ENDFOR
-end
+END
