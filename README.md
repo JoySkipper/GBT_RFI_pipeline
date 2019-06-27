@@ -9,7 +9,7 @@ You will also need to clone/download the GBT_RFI_Analysis_Tool (https://github.c
 
 ## How to Run the Script
 
-To run the script, you need to run determine_new_RFI_files.py with two inline arguments: path_to_current_RFI_files and path_to_processed_RFI_files. Run this within the directory in which you'd like your processed RFI data to be dumped. Therefore, you need write permissions in your current directory to run this code. 
+To run the script, you need to run process_new_RFI_files.py with two inline arguments: path_to_current_RFI_files and path_to_processed_RFI_files. Run this within the directory in which you'd like your processed RFI data to be dumped. Therefore, you need write permissions in your current directory to run this code. 
 
 The first is the path to a directory containing, but not necessarily exclusively containing, new RFI data that you wish to be processed. Again, this directory can also contain already processed data. 
 
