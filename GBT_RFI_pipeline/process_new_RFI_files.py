@@ -119,4 +119,4 @@ if __name__ == '__main__':
         writer = csv.writer(outfile)
         writer.writerows(data_to_be_processed)
     # Calling that IDL processing file
-    os.system("gbtidl -e \"summary_to_file\"")
+    os.system("gbtidl -e \"automation_of_processing\"")
