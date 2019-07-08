@@ -1,0 +1,13 @@
+filename,receiver,number_of_scans,number_of_feeds,number_of_IFs
+TRFI_052619_C1,Rcvr4_6,7,1,6
+TRFI_052219_S1,Rcvr2_3,8,1,2
+TRFI_041319_L1,Rcvr1_2,4,1,4
+TRFI_051919_S2,Rcvr2_3,8,1,2
+TRFI_060619_81,Rcvr_800,3,1,2
+TRFI_052219_K1,RcvrArray18_26,8,1,2
+TRFI_042819_K1,RcvrArray18_26,9,1,2
+TRFI_052819_C3,Rcvr4_6,7,1,6
+TRFI_112318_X1,Rcvr8_10,2,1,4
+TRFI_052719_81,Rcvr_800,7,1,2
+TRFI_011019_A1,Rcvr26_40,5,2,4
+
