@@ -671,7 +671,12 @@ pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom
             ; print, x[0], x[nchans-1]
 
             for ic=long(0), long(nchans-1) do begin
-
+		CATCH, Error_status
+                if Error_status NE 0 THEN BEGIN
+              	  print, 'Error Index: ', Error_status
+		  print, 'Error Message: ', !Error_state.msg
+		  CATCH, /CANCEL
+                endif
 
                 xsort[ifn,ic] = x[sortOrder[ic]]
                 ysort[ifn,ic] = y[sortOrder[ic]]    
