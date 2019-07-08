@@ -4,6 +4,7 @@ import os
 import csv
 import pandas
 from rfitrends import GBT_receiver_specs
+from rfitrends import RFI_input_for_SQL
 
 def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI_files: str):
     """
@@ -24,7 +25,8 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
         if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files):
             RFI_files_to_be_processed.append(current_RFI_file)
 
-    return(RFI_files_to_be_processed)
+    #return(RFI_files_to_be_processed)
+    return(["TRFI_052219_X1", "TRFI_041319_L1"])
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
@@ -63,7 +65,7 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
     return: data_to_process; which is a list of lists containing each file with the information needed to run the GBTIDL processing script
     """
     data_to_process = []
-    data_to_process.append(["filename", "receiver", "number_of_scans", "number_of_feeds", "number_of_IFs"])
+    data_to_process.append(["filename", "receiver", "max_scan_number", "min_scan_number", "number_of_feeds", "number_of_IFs"])
     
     for file_to_be_processed in RFI_files_to_be_processed:
 
@@ -76,7 +78,8 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
         # This processing IDL code is in the works to be replaced with one that is more robust. 
         if "Unknown" in data["SOURCE"]:
             continue
-        number_of_scans = max(data["SCAN"]) #Scans are 1-indexed
+        max_scan_number = max(data["SCAN"]) #Scans are 1-indexed
+        min_scan_number = min(data["SCAN"]) 
         number_of_feeds = max(data["FDNUM"])+ 1 #FDNUM is zero-indexed
         number_of_IFs = max(data["IFNUM"]) + 1 #IFNUM is zero-indexed
 
@@ -90,7 +93,8 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
         oneline_data_to_be_processed = [
             str(file_to_be_processed), 
             str(verified_receiver_name),
-            str(number_of_scans),
+            str(max_scan_number),
+            str(min_scan_number),
             str(number_of_feeds),
             str(number_of_IFs)
         ]
@@ -98,7 +102,7 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
         # Appending oneline data to be processed to create a list of lists for the file info
         data_to_process.append(oneline_data_to_be_processed)
 
-        print(str(file_to_be_processed)+" processed")
+        print(str(file_to_be_processed)+" parameter data gleaned")
         
     return(data_to_process)
     
@@ -106,17 +110,27 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
 
 
 
-
-
 if __name__ == '__main__': 
+    path_to_current_RFI_files = sys.argv[1]
+    path_to_processed_RFI_files = sys.argv[2]
     # Find which file to be processed
-    RFI_files_to_be_processed = determine_new_RFI_files(sys.argv[1],sys.argv[2])
+    RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
     # Get the data to be processed from each file
-    data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,sys.argv[1])
+    data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,path_to_current_RFI_files)
+    #data_to_be_processed = find_parameters_to_process_file(["TRFI_051419_S21"],path_to_current_RFI_files)
+    
     # Dummping that data to a csv to be read in by the IDL processing file
     print("dumping parameter data to RFI_file_parameters.csv")
     with open("RFI_file_parameters.csv","w") as outfile:
         writer = csv.writer(outfile)
         writer.writerows(data_to_be_processed)
     # Calling that IDL processing file
+    #os.system("cd "+str(path_to_processed_RFI_files))
     os.system("gbtidl -e \"automation_of_processing\"")
+    print("All new files processed and loaded as .txt files")
+    main_database = sys.argv[3]
+    dirty_database = sys.argv[4]
+    # RFI_input_for_SQL.write_to_database(main_database,dirty_database,path_to_current_RFI_files,files_to_process = RFI_files_to_be_processed)
+    print("Uploading .txt files to database:")
+    RFI_input_for_SQL.write_to_database(main_database,dirty_database,"./",files_to_process = RFI_files_to_be_processed)
+    

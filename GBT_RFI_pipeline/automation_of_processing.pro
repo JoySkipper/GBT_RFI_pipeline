@@ -1,6 +1,9 @@
 ; Importing the current GBTIDL processing script
 @/users/rmaddale/mypros/vectorTcals/scalUtils.pro
-@/users/rmaddale/mypros/rfiDisplay.pro
+;@/users/rmaddale/mypros/rfiDisplay.pro
+;@/users/jskipper/Documents/Rons_RFI_code/scalUtils.pro
+@/users/jskipper/Documents/scripts/RFI/GBT_RFI_pipeline/GBT_RFI_pipeline/rfiDisplay_test2.pro
+
 
 PRO automation_of_processing
     ; Read in the data gleaned from determine_new_RFI_files.py
@@ -18,24 +21,27 @@ PRO automation_of_processing
         ; Gleaning the values necessary for each filename from this line in the csv file
         filename = parameters.field1[filenum]
         receiver = parameters.field2[filenum]
-        number_of_scans = parameters.field3[filenum]
-        number_of_feeds = parameters.field4[filenum]
-        number_of_IFs = parameters.field5[filenum]
+        max_scan_number = parameters.field3[filenum]
+        min_scan_number = parameters.field4[filenum]
+        number_of_feeds = parameters.field5[filenum]
+        number_of_IFs = parameters.field6[filenum]
 
         ; making a list of the scans in ascending order (i.e. if there are 3 scans, it will make 1,2,3)
         scanlist = MAKE_ARRAY(dimension=1, /string)
-        FOR scan_num = 1,number_of_scans DO BEGIN
+        FOR scan_num = min_scan_number,max_scan_number DO BEGIN
             ; If we are at the end of the number of scans, we append the last scan but don't add the comma
-            IF scan_num EQ number_of_scans THEN BEGIN 
-                scanlist = [scanlist, STRING(scan_num)]
-            ENDIF ELSE BEGIN
+            ; IF scan_num EQ max_scan_number THEN BEGIN 
+            ;    scanlist = [scanlist, STRING(scan_num)]
+            ;ENDIF ELSE BEGIN
             ; Otherwise, we want a comma delimiter
-            scanlist = [scanlist, STRING(scan_num), ","]
-            ENDELSE
+            ;scanlist = [scanlist, STRING(scan_num), ","]
+            ;ENDELSE
+            scanlist = [scanlist, STRING(scan_num)]
         ENDFOR
-
         ; I DON'T KNOW WHY I NEED THIS
-        remove, 0, scanlist ;; THERE'S AN EXTRA 1 WHY
+        remove, 0, scanlist ;; THERE'S AN EXTRA INITIAL SCAN WHY
+        scanlist = strcompress(scanlist, /remove_all)
+
 
         
 
@@ -54,15 +60,24 @@ PRO automation_of_processing
         ; Finally, we're ready to start using GBTIDL to call the processing function
         ; Open the file
         offline, filename
+        print,"processing file:"
+        print, filename
         ; We have to make 4 .gifs, one for each zoom level
-        FOR nzoom = 0, 3 DO BEGIN
+        ; FOR nzoom = 0, 3 DO BEGIN ; Don't use this because it doesn't work
             ; if the receiver is ka_band (also known as Rcvr26_40) then we need the /ka flag
             IF (receiver EQ "Rcvr26_40") THEN BEGIN
-                rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = nzoom, /blnkChans, /makegifs, /makefile, /ka
+                rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile, /ka
             ; Otherwise, we call rfiscans_mod (the GBTIDL processing script) the same way but without the /ka flag
             ENDIF ELSE BEGIN
-                rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = nzoom, /blnkChans, /makegifs, /makefile
+                rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile
+                ;print, "file status: "
+                ;print, file_status
+                ;IF (file_status EQ "flagged_file") then begin
+                ;  filenum += 1
+                ;endif
+                
             ENDELSE
-        ENDFOR
+        ; ENDFOR
     ENDFOR
 END
+

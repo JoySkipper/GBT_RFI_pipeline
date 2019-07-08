@@ -1,0 +1,3 @@
+filename,receiver,max_scan_number,min_scan_number,number_of_feeds,number_of_IFs
+TRFI_052219_X1,Rcvr8_10,6,1,1,4
+TRFI_041319_L1,Rcvr1_2,4,1,1,4
