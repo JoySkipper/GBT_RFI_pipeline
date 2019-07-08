@@ -62,14 +62,17 @@ PRO automation_of_processing
         offline, filename
         print,"processing file:"
         print, filename
+        print, scanlist
         ; We have to make 4 .gifs, one for each zoom level
         ; FOR nzoom = 0, 3 DO BEGIN ; Don't use this because it doesn't work
             ; if the receiver is ka_band (also known as Rcvr26_40) then we need the /ka flag
             IF (receiver EQ "Rcvr26_40") THEN BEGIN
                 rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile, /ka
+                ;rfiscans_mod, [[6]], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile, /ka
             ; Otherwise, we call rfiscans_mod (the GBTIDL processing script) the same way but without the /ka flag
             ENDIF ELSE BEGIN
                 rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile
+                ;rfiscans_mod, [[6]], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile, /ka
                 ;print, "file status: "
                 ;print, file_status
                 ;IF (file_status EQ "flagged_file") then begin
