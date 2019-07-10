@@ -63,7 +63,7 @@ PRO automation_of_processing
         offline, filename
         print,"processing file:"
         print, filename
-        print, scanlist
+        
         ; We have to make 4 .gifs, one for each zoom level
         ; FOR nzoom = 0, 3 DO BEGIN ; Don't use this because it doesn't work
             ; if the receiver is ka_band (also known as Rcvr26_40) then we need the /ka flag
