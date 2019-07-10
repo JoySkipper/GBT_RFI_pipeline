@@ -1,6 +1,14 @@
 ; makegif.pro by Jim Braatz
 ; 
 ; 
+CATCH, Error_status
+if !Error_state.msg eq "Attempt to subscript SORTORDER with IC is out of range." THEN BEGIN
+   print, 'Error Index: ', Error_status
+   print, 'Error Message: ', !Error_state.msg
+   CATCH, /CANCEL
+RETURN
+endif
+
 pro makegif,filename,notrim=notrim,reverse=reverse
     common gbtplot_common,mystate,xarray
     if n_elements(filename) eq 0 then filename = 'mygif.gif'
@@ -669,16 +677,7 @@ pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom
             y = getyarray()
             sortOrder = sort(x)
             ; print, x[0], x[nchans-1]
-	    CATCH, Error_status
-            if !Error_state.msg eq "Attempt to subscript SORTORDER with IC is out of range." THEN BEGIN
-              print, 'Error Index: ', Error_status
-	          print, 'Error Message: ', !Error_state.msg
-	          CATCH, /CANCEL
-              RETURN
-              endif
             for ic=long(0), long(nchans-1) do begin
-
-
                 xsort[ifn,ic] = x[sortOrder[ic]]
                 ysort[ifn,ic] = y[sortOrder[ic]]    
             end
