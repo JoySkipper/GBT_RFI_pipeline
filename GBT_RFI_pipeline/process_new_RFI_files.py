@@ -26,7 +26,8 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
             RFI_files_to_be_processed.append(current_RFI_file)
 
     #return(RFI_files_to_be_processed)
-    return(["TRFI_052219_X1", "TRFI_041319_L1"])
+    #return(["TRFI_052219_X1", "TRFI_041319_L1"])
+    return(["TRFI_041319_L1"])
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
