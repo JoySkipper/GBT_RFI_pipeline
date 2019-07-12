@@ -6,6 +6,9 @@ import pandas
 from rfitrends import GBT_receiver_specs
 from rfitrends import RFI_input_for_SQL
 
+
+
+
 def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI_files: str):
     """
     :param path_to_all_RFI_files: This is the path to all recent RFI files that have not been pushed to the archive, including those that have been processed into the database and those that haven't
@@ -26,6 +29,10 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
             RFI_files_to_be_processed.append(current_RFI_file)
 
     return(RFI_files_to_be_processed)
+    #return(['TRFI_052219_X1','TRFI_033019_C1','TRFI_041319_L1'])
+    #return(['TRFI_062119_31'])
+    #return(['TRFI_052319_X1'])
+    #return(['TRFI_033019_C1'])
 
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
@@ -58,6 +65,25 @@ def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
 
     return(header,line_to_start_reader)
 
+ymax_determiner = {
+    "Rcvr_342":100,
+    "Rcvr_450":100,
+    "Rcvr_600":100,
+    "Rcvr_800":100,
+    "RcvrPF_2":100,
+    "RcvrPF_1":100,
+    "Rcvr1_2":100,
+    "Rcvr2_3":10,
+    "Rcvr4_6":10,
+    "Rcvr8_10":10,
+    "Rcvr12_18":10,
+    "RcvrArray18_26":10,
+    "Rcvr26_40":10,
+    "Rcvr40_52":10,
+    "Rcvr68_92":10,
+    "RcvrArray75_115":10
+}
+
 def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_current_RFI_files):
     """
     param: RFI_files_to_be_processed: List of all RFI files that need to be processed by the GBTIDL processing script
@@ -65,7 +91,7 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
     return: data_to_process; which is a list of lists containing each file with the information needed to run the GBTIDL processing script
     """
     data_to_process = []
-    data_to_process.append(["filename", "receiver", "max_scan_number", "min_scan_number", "number_of_feeds", "number_of_IFs"])
+    #data_to_process.append(["filename", "receiver", "max_scan_number", "min_scan_number", "number_of_feeds", "number_of_IFs"])
     
     for file_to_be_processed in RFI_files_to_be_processed:
 
@@ -88,16 +114,23 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
 
         # The receiver name is not consistent in it's naming scheme. This changes the receiver name to the GBT standardized frontend naming scheme
         verified_receiver_name = GBT_receiver_specs.FrontendVerification(receiver_name)
+        scanlist = list(range(min_scan_number,max_scan_number))
+        
+        
+        ymax = ymax_determiner[verified_receiver_name]
+
 
         # Creating a list representing one line of the eventual output file with the necessary info for each file
-        oneline_data_to_be_processed = [
-            str(file_to_be_processed), 
-            str(verified_receiver_name),
-            str(max_scan_number),
-            str(min_scan_number),
-            str(number_of_feeds),
-            str(number_of_IFs)
-        ]
+
+        
+        oneline_data_to_be_processed = {
+            "filename": file_to_be_processed, 
+            "frontend": verified_receiver_name,
+            "list_of_scans": scanlist,
+            "number_of_feeds":number_of_feeds,
+            "number_of_IFs":number_of_IFs,
+            "ymax":ymax
+        }
 
         # Appending oneline data to be processed to create a list of lists for the file info
         data_to_process.append(oneline_data_to_be_processed)
@@ -107,6 +140,11 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
     return(data_to_process)
     
 
+def analyze_file(file_to_process):
+    if file_to_process["frontend"] == "Rcvr26_40":
+        os.system("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file,  "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile, /ka\"") 
+    else: 
+        os.system("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file, "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile\"")
 
 
 
@@ -118,15 +156,16 @@ if __name__ == '__main__':
     # Get the data to be processed from each file
     data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,path_to_current_RFI_files)
     #data_to_be_processed = find_parameters_to_process_file(["TRFI_051419_S21"],path_to_current_RFI_files)
-    
+    for file_to_process in data_to_be_processed:
+        analyze_file(file_to_process)
     # Dummping that data to a csv to be read in by the IDL processing file
-    print("dumping parameter data to RFI_file_parameters.csv")
-    with open("RFI_file_parameters.csv","w") as outfile:
-        writer = csv.writer(outfile)
-        writer.writerows(data_to_be_processed)
+    #print("dumping parameter data to RFI_file_parameters.csv")
+    #with open("RFI_file_parameters.csv","w") as outfile:
+    #    writer = csv.writer(outfile)
+    #    writer.writerows(data_to_be_processed)
     # Calling that IDL processing file
     #os.system("cd "+str(path_to_processed_RFI_files))
-    os.system("gbtidl -e \"automation_of_processing\"")
+    #os.system("gbtidl -e \"automation_of_processing\"")
     print("All new files processed and loaded as .txt files")
     main_database = sys.argv[3]
     dirty_database = sys.argv[4]
