@@ -1,13 +1,7 @@
 ; makegif.pro by Jim Braatz
 ; 
 ; 
-CATCH, Error_status
-if !Error_state.msg eq "Attempt to subscript SORTORDER with IC is out of range." THEN BEGIN
-   print, 'Error Index: ', Error_status
-   print, 'Error Message: ', !Error_state.msg
-   CATCH, /CANCEL
-RETURN
-endif
+
 
 pro makegif,filename,notrim=notrim,reverse=reverse
     common gbtplot_common,mystate,xarray
@@ -400,6 +394,19 @@ pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom
 ;            You must also specify a value for blankWdth that is greater than zero.
 ;       Note that you can specify  /flagFreqs, /blnkChans, and /blnkFreqs at the same time.
 
+    CATCH, Error_status
+    if (Error_status NE 0) and !Error_state.msg eq "Attempt to subscript SORTORDER with IC is out of range." THEN BEGIN
+        print, 'Error Index: ', Error_status
+        print, 'Error Message: ', !Error_state.msg
+        CATCH, /CANCEL
+        RETURN
+    endif else if (Error_status NE 0) then begin
+        print, 'Error Index: ', Error_status
+        print, 'Error Message: ', !Error_state.msg
+        STOP
+    endif
+    
+
     if (n_elements(ifmax) eq 0) then ifmax = 7
     if (n_elements(fdnum) eq 0) then fdnum = 0
     if (n_elements(nzoom) eq 0) then nzoom = 0
@@ -677,6 +684,8 @@ pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom
             y = getyarray()
             sortOrder = sort(x)
             ; print, x[0], x[nchans-1]
+
+            
             for ic=long(0), long(nchans-1) do begin
                 xsort[ifn,ic] = x[sortOrder[ic]]
                 ysort[ifn,ic] = y[sortOrder[ic]]    
@@ -698,9 +707,15 @@ pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom
             end
         end
         free_lun, lun
+
      end
 
      data_free, dc_Arr
+     emptystack
+     clear
+     sclear
+     
+
 
 end
 

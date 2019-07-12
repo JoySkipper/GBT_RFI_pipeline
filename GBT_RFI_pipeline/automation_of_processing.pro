@@ -69,12 +69,10 @@ PRO automation_of_processing
             ; if the receiver is ka_band (also known as Rcvr26_40) then we need the /ka flag
             IF (receiver EQ "Rcvr26_40") THEN BEGIN
                 rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile, /ka
-                print, "file written"
                 ;rfiscans_mod, [[6]], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile, /ka
             ; Otherwise, we call rfiscans_mod (the GBTIDL processing script) the same way but without the /ka flag
             ENDIF ELSE BEGIN
                 rfiscans_mod, [scanlist], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile
-                print, "file written"
                 ;rfiscans_mod, [[6]], fdnum = number_of_feeds-1, ifmax = number_of_IFs-1, ymax = ymax, nzoom = 0 , /blnkChans, /makefile, /ka
                 ;print, "file status: "
                 ;print, file_status
@@ -83,15 +81,16 @@ PRO automation_of_processing
                 ;endif
                 
             ENDELSE
+            print, "file written"
         ; ENDFOR
-        print, "endelse"
+    
         
     ENDFOR
-    print, "endfor"
     common gbtplot_common, mystate, xarray
     widget_control, mystate.main, /DESTROY
+    print, "plot closed"
   
 END
 
-print, "I shouldn't exist"
+
 
