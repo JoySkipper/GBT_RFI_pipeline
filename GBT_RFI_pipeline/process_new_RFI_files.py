@@ -1,3 +1,11 @@
+"""
+..module:: process_new_RFI_files.py
+    :synopsis: From the beginning of the RFI processing to the end, this script seeks out the unprocessed sdfits RFI files, determines which ones are new or old, 
+    gleans the necessary information to process this file in GBTIDL, processes it in GBTIDL, and uploads that information to a mysql database. 
+..moduleauthor:: Joy Skipper <jskipper@nrao.edu>
+Code Origin: https://github.com/JoySkipper/GBT_RFI_pipeline
+"""
+
 import sys
 import numpy as np
 import os
