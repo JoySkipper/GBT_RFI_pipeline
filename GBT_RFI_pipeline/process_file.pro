@@ -1,3 +1,8 @@
+;..module: process_file.pro
+    ;:synopsis: imports the necessary gbtidl dependencies and then calls rfiScansMod. Also closes the GBTIDL plot when it's finished
+;..moduleauthor:: Joy Skipper <jskipper@nrao.edu>
+;Code Origin: https://github.com/JoySkipper/GBT_RFI_pipeline
+
 ; Importing the current GBTIDL processing script
 
 @/users/rmaddale/mypros/vectorTcals/scalUtils.pro

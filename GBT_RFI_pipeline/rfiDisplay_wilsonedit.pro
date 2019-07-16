@@ -1,3 +1,11 @@
+; 
+;..module:: rfiDisplay_wilsonedit.pro
+    ;:synopsis:: Processes RFI sdfits data and exports it to a .txt file. Has been edited by Joy Skipper to accomodate error handling
+;..moduleauthor:: Joy Skipper <jskipper@nrao.edu>, Ron Maddalena <rmaddale@nrao.edu>, Jim Braatz <jbraatz@nrao.edu>
+;Code Origin: https://github.com/JoySkipper/GBT_RFI_pipeline
+
+
+
 ; makegif.pro by Jim Braatz
 ; 
 ; 
