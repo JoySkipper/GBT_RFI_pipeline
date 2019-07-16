@@ -5,22 +5,10 @@ import csv
 import pandas
 from rfitrends import GBT_receiver_specs
 from rfitrends import RFI_input_for_SQL
+from rfitrends import fxns_output_process
 import time
 import multiprocessing as mp
 import subprocess
-
-def timeout(func, args = (), kwds = {}, timeout = 1, default = None):
-    pool = mp.Pool(processes = 1)
-    result = pool.apply_async(func, args = args, kwds = kwds)
-    try:
-        val = result.get(timeout = timeout)
-    except mp.TimeoutError:
-        pool.terminate()
-        return default
-    else:
-        pool.close()
-        pool.join()
-        return val
 
 
 
@@ -45,11 +33,11 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
             RFI_files_to_be_processed.append(current_RFI_file)
 
     #return(RFI_files_to_be_processed)
-    return(['TRFI_052219_X1','TRFI_033019_C1','TRFI_041319_L1', 'TRFI_052319_X1'])
+    #return(['TRFI_052219_X1','TRFI_033019_C1','TRFI_041319_L1', 'TRFI_052319_X1'])
     #return(['TRFI_062119_31'])
     #return(['TRFI_052319_X1'])
     #return(['TRFI_033019_C1'])
-    #return(['TRFI_041319_L1'])
+    return(['TRFI_041319_L1'])
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
@@ -157,6 +145,8 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
     
 
 def analyze_file(file_to_process):
+    # The counts for timeout occured assume that the only files that are cancelled due to bad data are from timeouts, which we know is not true (RFIscansMod has that catch)
+    timeout_occured = False
     if file_to_process["frontend"] == "Rcvr26_40":
         #print(timeout(os.system, args=("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file,  "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile, /ka\""),timeout=3,default="Process Timed Out.")) 
         process = subprocess.Popen(['gbtidl', '-e', 'offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile, /ka'])
@@ -167,6 +157,7 @@ def analyze_file(file_to_process):
         except subprocess.TimeoutExpired:
             print('Timed out - killing', process.pid)
             process.kill()
+            timeout_occured = True
         print("Done")
     else:
         #print('\"offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile\"')
@@ -178,7 +169,9 @@ def analyze_file(file_to_process):
         except subprocess.TimeoutExpired:
             print('Timed out - killing', process.pid)
             process.kill()
+            timeout_occured = True
         print("Done")
+    return(timeout_occured)
         #print(timeout(os.system, args=("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file, "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile\"",),timeout=3,default="Process Timed Out"))
 
 
@@ -191,11 +184,14 @@ if __name__ == '__main__':
     # Get the data to be processed from each file
     data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,path_to_current_RFI_files)
     #data_to_be_processed = find_parameters_to_process_file(["TRFI_051419_S21"],path_to_current_RFI_files)
+    timeout_tally = 0
     for file_to_process in data_to_be_processed:
         print("processing file: "+str(file_to_process['filename']))
-        analyze_file(file_to_process)
+        timeout_occured = analyze_file(file_to_process)
         #print(timeout(analyze_file, args=(file_to_process,),timeout=3,default='File timed out in processing. Moving on to next file.'))
         print("file "+str(file_to_process['filename'])+" processed.")
+        if timeout_occured == True: 
+            timeout_tally += 1
         
 
     # Dummping that data to a csv to be read in by the IDL processing file
@@ -207,6 +203,7 @@ if __name__ == '__main__':
     #os.system("cd "+str(path_to_processed_RFI_files))
     #os.system("gbtidl -e \"automation_of_processing\"")
     print("All new files processed and loaded as .txt files")
+    print(str(timeout_tally)+" file out of "+str(len(data_to_be_processed))+" failed to process due to bad data.")
     main_database = sys.argv[3]
     dirty_database = sys.argv[4]
     # RFI_input_for_SQL.write_to_database(main_database,dirty_database,path_to_current_RFI_files,files_to_process = RFI_files_to_be_processed)
