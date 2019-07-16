@@ -124,3 +124,7 @@ dmypy.json
 
 # Visual Studio Code
 .vscode/
+
+# Created .txt and .csv files
+*.csv
+*.txt
