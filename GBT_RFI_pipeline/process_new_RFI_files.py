@@ -5,6 +5,22 @@ import csv
 import pandas
 from rfitrends import GBT_receiver_specs
 from rfitrends import RFI_input_for_SQL
+import time
+import multiprocessing as mp
+import subprocess
+
+def timeout(func, args = (), kwds = {}, timeout = 1, default = None):
+    pool = mp.Pool(processes = 1)
+    result = pool.apply_async(func, args = args, kwds = kwds)
+    try:
+        val = result.get(timeout = timeout)
+    except mp.TimeoutError:
+        pool.terminate()
+        return default
+    else:
+        pool.close()
+        pool.join()
+        return val
 
 
 
@@ -28,12 +44,12 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
         if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files):
             RFI_files_to_be_processed.append(current_RFI_file)
 
-    return(RFI_files_to_be_processed)
-    #return(['TRFI_052219_X1','TRFI_033019_C1','TRFI_041319_L1'])
+    #return(RFI_files_to_be_processed)
+    return(['TRFI_052219_X1','TRFI_033019_C1','TRFI_041319_L1', 'TRFI_052319_X1'])
     #return(['TRFI_062119_31'])
     #return(['TRFI_052319_X1'])
     #return(['TRFI_033019_C1'])
-
+    #return(['TRFI_041319_L1'])
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
@@ -142,9 +158,28 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
 
 def analyze_file(file_to_process):
     if file_to_process["frontend"] == "Rcvr26_40":
-        os.system("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file,  "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile, /ka\"") 
-    else: 
-        os.system("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file, "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile\"")
+        #print(timeout(os.system, args=("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file,  "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile, /ka\""),timeout=3,default="Process Timed Out.")) 
+        process = subprocess.Popen(['gbtidl', '-e', 'offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile, /ka'])
+        
+        try:
+            print('Running in process', process.pid)
+            process.wait(timeout=300)
+        except subprocess.TimeoutExpired:
+            print('Timed out - killing', process.pid)
+            process.kill()
+        print("Done")
+    else:
+        #print('\"offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile\"')
+        process = subprocess.Popen(['gbtidl', '-e', 'offline, \''+str(file_to_process['filename'])+'\' & process_file, '+str(file_to_process['list_of_scans'])+', fdnum='+str(file_to_process['number_of_feeds'])+'-1, ymax='+str(file_to_process['ymax'])+', ifmax = '+str(file_to_process['number_of_IFs'])+'-1, nzoom = 0, /blnkChans, /makefile'])
+        #process = subprocess.Popen(['gbtidl', '-e', 'offline, \''+str(file_to_process['filename'])+'\''])
+        try:
+            print('Running in process', process.pid)
+            process.wait(timeout=300)
+        except subprocess.TimeoutExpired:
+            print('Timed out - killing', process.pid)
+            process.kill()
+        print("Done")
+        #print(timeout(os.system, args=("gbtidl -e \"offline, \'"+str(file_to_process["filename"])+"\' & process_file, "+str(file_to_process["list_of_scans"])+", fdnum="+str(file_to_process["number_of_feeds"])+"-1, ymax="+str(file_to_process["ymax"])+", ifmax = "+str(file_to_process["number_of_IFs"])+"-1, nzoom = 0, /blnkChans, /makefile\"",),timeout=3,default="Process Timed Out"))
 
 
 
@@ -157,7 +192,12 @@ if __name__ == '__main__':
     data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,path_to_current_RFI_files)
     #data_to_be_processed = find_parameters_to_process_file(["TRFI_051419_S21"],path_to_current_RFI_files)
     for file_to_process in data_to_be_processed:
+        print("processing file: "+str(file_to_process['filename']))
         analyze_file(file_to_process)
+        #print(timeout(analyze_file, args=(file_to_process,),timeout=3,default='File timed out in processing. Moving on to next file.'))
+        print("file "+str(file_to_process['filename'])+" processed.")
+        
+
     # Dummping that data to a csv to be read in by the IDL processing file
     #print("dumping parameter data to RFI_file_parameters.csv")
     #with open("RFI_file_parameters.csv","w") as outfile:
