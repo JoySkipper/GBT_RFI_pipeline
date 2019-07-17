@@ -14,10 +14,28 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
                 nbox=nbox, tau=tau, ap_eff=ap_eff, fltrParms=fltrParms, blnkWdth=blnkWdth, $
                 blnkChans=blnkChans, blnkFreqs=blnkFreqs, flagFreqs=flagFreqs, colors=colors, pols=pols, $
                 calseqList=calseqList
+    CATCH, Error_status 
+    if Error_status NE 0 then begin
+        openw, status_file, 'stat.txt',/GET_LUN
+        printf, status_file, "bad_data"
+        FREE_LUN, status_file
+        CATCH,/CANCEL
+    endif
+    
 
-    rfiscans_Mod, scanlist, fdnum = fdnum, ifmax = ifmax, ymax = ymax, nzoom = nzoom , blnkChans=blnkChans, makefile=makefile, ka=ka
+    status = rfiscans_Mod(scanlist, fdnum = fdnum, ifmax = ifmax, ymax = ymax, nzoom = nzoom , blnkChans=blnkChans, makefile=makefile, ka=ka)
     common gbtplot_common, mystate, xarray
     widget_control, mystate.main, /DESTROY
     print, "plot closed"
+    openw, status_file, 'stat.txt',/GET_LUN
+    if status then begin
+        printf, status_file, status
+        FREE_LUN, status_file
+    endif else begin
+        printf, status_file, "good_data"
+        FREE_LUN, status_file
+    endelse
+    
+    
 end
 
