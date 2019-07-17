@@ -340,7 +340,7 @@ function calseq,scan,tcold=tcold,ifnum=ifnum,plnum=plnum,fdnum=fdnum
 end
 
 
-pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom, ymax=ymax, $
+FUNCTION rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom, ymax=ymax, $
                 zfactor=zfactor, instance=instance, makegifs=makegifs, makefile=makefile, ka=ka, $
                 nbox=nbox, tau=tau, ap_eff=ap_eff, fltrParms=fltrParms, blnkWdth=blnkWdth, $
                 blnkChans=blnkChans, blnkFreqs=blnkFreqs, flagFreqs=flagFreqs, colors=colors, pols=pols, $
@@ -401,17 +401,20 @@ pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom
 ;       /blnkFreqs = a flag that specifies the channels listed in the blankFreqs.dat file will be blanked. 
 ;            You must also specify a value for blankWdth that is greater than zero.
 ;       Note that you can specify  /flagFreqs, /blnkChans, and /blnkFreqs at the same time.
-
+    
     CATCH, Error_status
     if (Error_status NE 0) and !Error_state.msg eq "Attempt to subscript SORTORDER with IC is out of range." THEN BEGIN
         print, 'Error Index: ', Error_status
         print, 'Error Message: ', !Error_state.msg
-        CATCH, /CANCEL
-        RETURN
+        RETURN, "bad_data"
+        
+        
     endif else if (Error_status NE 0) then begin
         print, 'Error Index: ', Error_status
         print, 'Error Message: ', !Error_state.msg
-        STOP
+        RETURN, "bad_data"
+        
+        
     endif
     
 
@@ -722,8 +725,6 @@ pro rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom
      emptystack
      clear
      sclear
-     
-
-
+    return, "good_data"
 end
 
