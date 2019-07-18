@@ -17,6 +17,7 @@ from rfitrends import fxns_output_process
 import time
 import multiprocessing as mp
 import subprocess
+import argparse
 
 
 
@@ -40,12 +41,12 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
         if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files):
             RFI_files_to_be_processed.append(current_RFI_file)
 
-    return(RFI_files_to_be_processed)
+    #return(RFI_files_to_be_processed)
     #return(['TRFI_052219_X1','TRFI_033019_C1','TRFI_041319_L1', 'TRFI_052319_X1'])
     #return(['TRFI_062119_31'])
     #return(['TRFI_052319_X1'])
     #return(['TRFI_033019_C1'])
-    #return(['TRFI_041319_L1'])
+    return(['TRFI_041319_L1'])
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
@@ -222,8 +223,17 @@ def analyze_file(file_to_process):
     return(problem_occured)       
 
 if __name__ == '__main__': 
-    path_to_current_RFI_files = sys.argv[1]
-    path_to_processed_RFI_files = sys.argv[2]
+    parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
+    parser.add_argument("current_path",help="The path to the current RFI files, of which some will be the new files waiting to be processed")
+    parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
+    parser.add_argument("main_table",help="The string name of the table to which you'd like to upload your clean RFI data")
+    parser.add_argument("dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data")
+    args = parser.parse_args()
+    path_to_current_RFI_files = args.current_path
+    path_to_processed_RFI_files = args.processed_path
+    IP_address = '192.33.116.22'
+    database = 'jskipper'
+    username, password = RFI_input_for_SQL.prompt_user_login_to_database(IP_address,database)
     # Find which file to be processed
     RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
     # Get the data to be processed from each file
@@ -243,9 +253,9 @@ if __name__ == '__main__':
         print(str(problem_tally)+" file out of "+str(len(data_to_be_processed))+" failed to process due to bad data.")
     else: 
         print("all files processed successfully")
-    main_database = sys.argv[3]
-    dirty_database = sys.argv[4]
+    main_table = args.main_table
+    dirty_table = args.dirty_table
     print("Uploading .txt files to database")
-    RFI_input_for_SQL.write_to_database(main_database,dirty_database,"./",files_to_process = RFI_files_to_be_processed)
+    RFI_input_for_SQL.write_to_database(username,password,IP_address,database,main_table,dirty_table,"./",RFI_files_to_be_processed)
     print("All files uploaded to database")
     
