@@ -5,6 +5,8 @@ Pipeline for reducing and extracting useful information from the Green Bank Tele
 
 Currently, before running this script, you will need to download the "gifclip" bash command (http://giflib.sourceforge.net/gifclip.html) before being able to run it and have the .gif files produced to not be empty. Otherwise, if you are solely interested in the .txt files produced, installing gifclip is not necessary. 
 
+Hopefully in the future this will not be required. The readme will update when this is the case.
+
 You will also need to clone/download the GBT_RFI_Analysis_Tool (https://github.com/JoySkipper/GBT_RFI_Analysis_Tool) in order to import the functionality of rfitrends/GBT_receiver_specs.py. 
 
 ## How to Run the Script
