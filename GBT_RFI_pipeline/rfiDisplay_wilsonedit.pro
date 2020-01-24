@@ -4,7 +4,7 @@
 ;..moduleauthor:: Joy Skipper <jskipper@nrao.edu>, Ron Maddalena <rmaddale@nrao.edu>, Jim Braatz <jbraatz@nrao.edu>
 ;Code Origin: https://github.com/JoySkipper/GBT_RFI_pipeline
 
-
+; In version 1.0 of GBT_RFI_Pipeline, the hope is to either go through this code, try to understand it, and document it, or to redo it in a well-documented fashion.
 
 ; makegif.pro by Jim Braatz
 ; 

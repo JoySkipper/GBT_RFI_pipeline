@@ -41,12 +41,7 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
         if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files):
             RFI_files_to_be_processed.append(current_RFI_file)
 
-    #return(RFI_files_to_be_processed)
-    #return(['TRFI_052219_X1','TRFI_033019_C1','TRFI_041319_L1', 'TRFI_052319_X1'])
-    #return(['TRFI_062119_31'])
-    #return(['TRFI_052319_X1'])
-    #return(['TRFI_033019_C1'])
-    return(['TRFI_041319_L1'])
+    return(RFI_files_to_be_processed) 
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
