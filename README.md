@@ -9,11 +9,17 @@ You will also need to clone/download the GBT_RFI_Analysis_Tool (https://github.c
 
 ## How to Run the Script
 
-To run the script, you need to run process_new_RFI_files.py with two inline arguments: path_to_current_RFI_files and path_to_processed_RFI_files. Run this within the directory in which you'd like your processed RFI data to be dumped. Therefore, you need write permissions in your current directory to run this code. 
+To run the script, you need to run:
+
+```console
+process_new_RFI_files.py <path_to_current_RFI_files> <path_to_processed_RFI_files> 
+```
+
+Run this within the directory in which you'd like your processed RFI data to be dumped. Therefore, you need write permissions in your current directory to run this code. 
 
 The first is the path to a directory containing, but not necessarily exclusively containing, new RFI data that you wish to be processed. Again, this directory can also contain already processed data. 
 
-The second is the path to a directory containing all data that has already been processed. This will be used to compare against the first argument to determine what needs to be processed. 
+The second is the path to a directory containing all data that has already been processed, or that you wish to not be processed for any reason. This will be used to compare against the first argument to determine what needs to be processed. 
 
 The script will then run and dump one .txt and 4 .gif files for each processed RFI file. The .txt file contains the processed RFI data and header information, while the 4 .gif files contain still images of the spectrum at 4 different zoom levels. 
 
