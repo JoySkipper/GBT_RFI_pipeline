@@ -21,13 +21,16 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
         FREE_LUN, status_file
         CATCH,/CANCEL
     endif
-    
+    ;if there's an error, catch it and send it to bad data. 
 
     status = rfiscans_Mod(scanlist, fdnum = fdnum, ifmax = ifmax, ymax = ymax, nzoom = nzoom , blnkChans=blnkChans, makefile=makefile, ka=ka)
-    common gbtplot_common, mystate, xarray
+    common gbtplot_common, mystate, xarray 
+    ; rfiscans mod opens a plot, which we need to close to go to the next plot
     widget_control, mystate.main, /DESTROY
-    print, "plot closed"
+    print, "plot closed" 
+    ; open the next file
     openw, status_file, 'stat.txt',/GET_LUN
+    ; print to file 
     if status then begin
         printf, status_file, status
         FREE_LUN, status_file
