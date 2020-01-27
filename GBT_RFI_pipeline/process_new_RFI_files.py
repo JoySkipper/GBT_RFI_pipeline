@@ -24,8 +24,8 @@ import argparse
 
 def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI_files: str):
     """
-    :param path_to_all_RFI_files: This is the path to all recent RFI files that have not been pushed to the archive, including those that have been processed into the database and those that haven't
-    :param path_to_processed_RFI_files: This is the path to the RFI files that have been processed into the database
+    :param path_to_current_RFI_files: This is the path to all recent RFI files that have not been pushed to the archive, including those that have been processed into the database and those that haven't
+    :param path_to_processed_RFI_files: This is the path to write to all the RFI files. Should also contain any RFI files you don't want repeated
     :return: Returns RFI_files_to_be_processed, which is all the names of files that still need go through the processing script
     """
 
@@ -41,7 +41,21 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
         if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files):
             RFI_files_to_be_processed.append(current_RFI_file)
 
-    return(RFI_files_to_be_processed) 
+    return(RFI_files_to_be_processed)
+
+def determine_all_RFI_files(path_to_current_RFI_files:str):
+    """
+    :param path_to_current_RFI_files:This is the path to all recent RFI files that have not been pushed to the archive, including those that have been processed into the database and those that haven't
+    :param path_to_processed_RFI_files: This is the path to write to all the RFI files
+    :return: Returns RFI_files_to_be_processed, which is all the files that need to be processed
+    """
+    RFI_files_to_be_processed = []
+    # This for loop goes through all the RFI files still in sdfits and that haven't been archived, finds those that needs to be processed, and appends them to RFI_files_to_be_processed        
+    for current_RFI_file in os.listdir(path_to_current_RFI_files): 
+        if current_RFI_file.startswith("TRFI"):
+            RFI_files_to_be_processed.append(current_RFI_file)
+    return(RFI_files_to_be_processed)
+
 
 def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
@@ -223,6 +237,7 @@ if __name__ == '__main__':
     parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
     parser.add_argument("main_table",help="The string name of the table to which you'd like to upload your clean RFI data")
     parser.add_argument("dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data")
+    parser.add_argument("--skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no.",action="store_true")
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
     path_to_processed_RFI_files = args.processed_path
@@ -230,8 +245,13 @@ if __name__ == '__main__':
     database = 'jskipper'
     username, password = RFI_input_for_SQL.prompt_user_login_to_database(IP_address,database)
     # Find which file to be processed
-    RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
-    # Get the data to be processed from each file
+    if args.skipalreadyprocessed:
+        RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
+        # Get the data to be processed from each file
+    else:
+        RFI_files_to_be_processed = determine_all_RFI_files(path_to_current_RFI_files)
+        # Get all data from the directory given of files to be processed
+
     data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,path_to_current_RFI_files)
     # Go through each file and process it, and tallying the number of problem files as well
     problem_tally = 0
