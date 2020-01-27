@@ -65,6 +65,7 @@ def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     """
     #line_to_start reader is counting the line in which the header ends, so that we can later read in the data of the file and skip the header
     line_to_start_reader = 0
+
     try:
         with open(path_to_current_RFI_files+file_to_be_processed+"/"+file_to_be_processed+".raw.vegas/"+file_to_be_processed+".raw.vegas.index") as f:
             header = {}
@@ -144,6 +145,9 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
 
         # The receiver name is not consistent in it's naming scheme. This changes the receiver name to the GBT standardized frontend naming scheme
         verified_receiver_name = GBT_receiver_specs.FrontendVerification(receiver_name)
+        if verified_receiver_name == 'Unknown':
+            data_to_process.append('bad_file')
+            continue
         scanlist = list(range(min_scan_number,max_scan_number))
         
         # Figure out the ymax value using the info from the dictionary above
@@ -234,28 +238,27 @@ def analyze_file(file_to_process):
 if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
     parser.add_argument("current_path",help="The path to the current RFI files, of which some will be the new files waiting to be processed")
-    parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
-    parser.add_argument("main_table",help="The string name of the table to which you'd like to upload your clean RFI data")
-    parser.add_argument("dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data")
-    parser.add_argument("IP_address",help="The IP address of the database to which you want to upload")
-    parser.add_argument("database_name",help="The name of the database to which you want to upload")
-    parser.add_argument("--skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no.",action="store_true")
+    parser.add_argument("--skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no. Must give the path if this is selected.",type=str)
     parser.add_argument("--upload_to_database",help="a flag to determine if you want to upload the txt files to a given database",action="store_true")
+    parser.add_argument("-IP_address",help="The IP address of the database to which you want to upload",type=str)
+    parser.add_argument("-database_name",help="The name of the database to which you want to upload",type=str)
+    # parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
+    parser.add_argument("-main_table",help="The string name of the table to which you'd like to upload your clean RFI data",type=str)
+    parser.add_argument("-dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data",type=str)
+
+
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
     
  
     
     if args.skipalreadyprocessed:
-        if args.processed_path is None: 
-            parser.error("--skipalreadyprocessed requires the processed_path.")
-        path_to_processed_RFI_files = args.processed_path
+        path_to_processed_RFI_files = args.skipalreadyprocessed
         RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
         # Get the data to be processed from each file
     else:
         RFI_files_to_be_processed = determine_all_RFI_files(path_to_current_RFI_files)
         # Get all data from the directory given of files to be processed
-
     data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,path_to_current_RFI_files)
     # Go through each file and process it, and tallying the number of problem files as well
     problem_tally = 0
@@ -274,7 +277,7 @@ if __name__ == '__main__':
         print("all files processed successfully")
     if args.upload_to_database: 
         if args.IP_address is None or args.database_name is None or args.main_table is None or args.dirty_table is None:
-            parser.error("--upload_to_database requires IP_address, database_name, main_table, and dirty_table.")
+            parser.error("--upload_to_database requires -IP_address, -database_name, -main_table, and -dirty_table.")
         # IP_address = '192.33.116.22'
         # database = 'jskipper'
         IP_address = args.IP_address
