@@ -25,7 +25,7 @@ import argparse
 def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI_files: str):
     """
     :param path_to_current_RFI_files: This is the path to all recent RFI files that have not been pushed to the archive, including those that have been processed into the database and those that haven't
-    :param path_to_processed_RFI_files: This is the path to write to all the RFI files. Should also contain any RFI files you don't want repeated
+    :param path_to_processed_RFI_files: This is the path that should contain any RFI files you don't want repeated
     :return: Returns RFI_files_to_be_processed, which is all the names of files that still need go through the processing script
     """
 
@@ -243,10 +243,13 @@ if __name__ == '__main__':
     parser.add_argument("--upload_to_database",help="a flag to determine if you want to upload the txt files to a given database",action="store_true")
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
-    path_to_processed_RFI_files = args.processed_path
+    
  
     
     if args.skipalreadyprocessed:
+        if args.processed_path is None: 
+            parser.error("--skipalreadyprocessed requires the processed_path.")
+        path_to_processed_RFI_files = args.processed_path
         RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
         # Get the data to be processed from each file
     else:
