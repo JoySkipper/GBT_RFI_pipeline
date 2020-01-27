@@ -237,12 +237,16 @@ if __name__ == '__main__':
     parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
     parser.add_argument("main_table",help="The string name of the table to which you'd like to upload your clean RFI data")
     parser.add_argument("dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data")
+    parser.add_argument("IP_address",help="The IP address of the database to which you want to upload")
+    parser.add_argument("database_name",help="The name of the database to which you want to upload")
     parser.add_argument("--skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no.",action="store_true")
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
     path_to_processed_RFI_files = args.processed_path
-    IP_address = '192.33.116.22'
-    database = 'jskipper'
+    # IP_address = '192.33.116.22'
+    # database = 'jskipper'
+    IP_address = args.IP_address
+    database = args.database_name
     username, password = RFI_input_for_SQL.prompt_user_login_to_database(IP_address,database)
     # Find which file to be processed
     if args.skipalreadyprocessed:
