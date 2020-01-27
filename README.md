@@ -1,27 +1,27 @@
 # GBT_RFI_pipeline
 Pipeline for reducing and extracting useful information from the Green Bank Telescope RFI scans 
 
-## Installations required
+## Installation Requirements
+* Python 3.5+ (setup.py coming soon!)
+    * NumPy
+    * Pandas
+* GBTIDL v2.10.1 (http://gbtidl.nrao.edu/)
+* GBT_RFI_Analysis_Tool (https://github.com/JoySkipper/GBT_RFI_Analysis_Tool)
+* gifclip (http://giflib.sourceforge.net/gifclip.html)
+  * Users who are not interested in producing .gif images may elect not to install gifclip.
 
-Currently, before running this script, you will need to download the "gifclip" bash command (http://giflib.sourceforge.net/gifclip.html) before being able to run it and have the .gif files produced to not be empty. Otherwise, if you are solely interested in the .txt files produced, installing gifclip is not necessary. 
+## Prerequisites
+* You should be in possession of RFI data from the Green Bank Telescope in SDFITS format.
 
-Hopefully in the future this will not be required. The readme will update when this is the case.
-
-You will also need to clone/download the GBT_RFI_Analysis_Tool (https://github.com/JoySkipper/GBT_RFI_Analysis_Tool) in order to import the functionality of rfitrends/GBT_receiver_specs.py. 
-
-## How to Run the Script
-
-To run the script, you need to run:
+## How to run the Pipeline
+The GBT RFI Pipeline requires two arguments: (1) Location of the raw GBT RFI data you are in possession of, and (2) Directory of previous pipeline outputs to ignore.
 
 ```console
-process_new_RFI_files.py <path_to_current_RFI_files> <path_to_processed_RFI_files> 
+python process_new_RFI_files.py </path/to/raw/RFI/data/to/process> </path/of/raw/RFI/data/to/ignore> 
 ```
 
-Run this within the directory in which you'd like your processed RFI data to be dumped. Therefore, you need write permissions in your current directory to run this code. 
+Output results will be dumped into your current directory. Ensure you have write permissions to your current working directory
 
-The first is the path to a directory containing, but not necessarily exclusively containing, new RFI data that you wish to be processed. Again, this directory can also contain already processed data. 
+This pipeline generates four (4) .gif images of varying zoom levels and an ASCII text file containing reduced RFI intensity values (?) and corresponding header information.
 
-The second is the path to a directory containing all data that has already been processed, or that you wish to not be processed for any reason. This will be used to compare against the first argument to determine what needs to be processed. 
-
-The script will then run and dump one .txt and 4 .gif files for each processed RFI file. The .txt file contains the processed RFI data and header information, while the 4 .gif files contain still images of the spectrum at 4 different zoom levels. 
-
+If you place any of the text files into the path of the second argument, the pipeline will automatically detect already processed data and skip them upon the next reduction.
