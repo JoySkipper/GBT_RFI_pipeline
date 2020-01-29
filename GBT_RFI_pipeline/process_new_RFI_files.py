@@ -238,13 +238,13 @@ def analyze_file(file_to_process):
 if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
     parser.add_argument("current_path",help="The path to the current RFI files, of which some will be the new files waiting to be processed")
-    parser.add_argument("--skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no. Must give the path if this is selected.",type=str)
+    parser.add_argument("--skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no. If this is selected, you must give the path to files that you know have already been processed.",type=str)
     parser.add_argument("--upload_to_database",help="a flag to determine if you want to upload the txt files to a given database",action="store_true")
-    parser.add_argument("-IP_address",help="The IP address of the database to which you want to upload",type=str)
-    parser.add_argument("-database_name",help="The name of the database to which you want to upload",type=str)
+    parser.add_argument("-IP_address",help="The IP address of the database to which you want to upload (required if you have selected -upload_to_database) ",type=str)
+    parser.add_argument("-database_name",help="The name of the database to which you want to upload (required if you have selected -upload_to_database)",type=str)
     # parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
-    parser.add_argument("-main_table",help="The string name of the table to which you'd like to upload your clean RFI data",type=str)
-    parser.add_argument("-dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data",type=str)
+    parser.add_argument("-main_table",help="The string name of the table to which you'd like to upload your clean RFI data (required if you have selected -upload_to_database)",type=str)
+    parser.add_argument("-dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data (required if you have selected -upload_to_database)",type=str)
 
 
     args = parser.parse_args()
