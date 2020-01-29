@@ -14,9 +14,10 @@ Pipeline for reducing and extracting useful information from the Green Bank Tele
 * You should be in possession of RFI data from the Green Bank Telescope in SDFITS format.
 
 ## How to run the Pipeline
-The GBT RFI Pipeline requires one argument: (1) Location of the raw GBT RFI data you are in possession of
+The GBT RFI Pipeline requires one argument: The location of the raw GBT RFI data you are in possession of
 
-However, there are several optional arguments controlled by two flags: 
+However, there are several optional arguments controlled by two flags:
+
 1.)  --skipalreadyprocessed decides if you'd like to specify a directory of files that you would like to be ignored, or that have already been processed. If you provide this flag, you will need to give the processed_path argument, which is the path containing those files you'd like to be ignored, just after this flag.
 
 If you place any of the text files into the path of this argument, the pipeline will automatically detect already processed data and skip them upon the next reduction.
@@ -30,6 +31,8 @@ If you place any of the text files into the path of this argument, the pipeline 
     c.) main_table: the table to which you would like all clean, unflagged data to be uploaded
     
     d.) dirty_table: the table to which you'd like all flagged data to be uploaded
+
+## Simplest working example:
 
 ```console
 python process_new_RFI_files.py </path/to/raw/RFI/data/to/process>
