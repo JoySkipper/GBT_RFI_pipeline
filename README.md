@@ -22,9 +22,13 @@ However, there are several optional arguments controlled by two flags:
 If you place any of the text files into the path of this argument, the pipeline will automatically detect already processed data and skip them upon the next reduction.
 
 2.) --upload_to_database decides if you'd like to upload the produced data to an SQL database. If this is selected, you will need to provide 4 arguments:
+    
     a.) IP_address: the IP address of the SQL database that you would like to upload your data to
+    
     b.) database_name: the name of that SQL database that you would like to upload your data to
+    
     c.) main_table: the table to which you would like all clean, unflagged data to be uploaded
+    
     d.) dirty_table: the table to which you'd like all flagged data to be uploaded
 
 ```console
