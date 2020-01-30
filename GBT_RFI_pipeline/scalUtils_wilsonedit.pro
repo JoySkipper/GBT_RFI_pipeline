@@ -37,6 +37,7 @@
 ; documentation for <a href="scal.html">scal.pro</a>
 ;
 ; <p><B>Contributed By: Ron Maddalena, NRAO-GB</B>
+; <p> Edited By: Joy "Wilson" SKipper <p>
 ;
 ; @version $Id: scalUtils.pro,v 1.4 2009/12/02 18:57:35 bgarwood Exp $
 ;-

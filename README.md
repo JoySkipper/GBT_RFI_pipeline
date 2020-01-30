@@ -42,3 +42,6 @@ Output results will be dumped into your current directory. Ensure you have write
 
 This pipeline generates four (4) .gif images of varying zoom levels and an ASCII text file containing reduced RFI intensity values vs. frequency values and corresponding header information.
 
+## Citations: 
+
+This repository includes rfiDisplay_wilsonedit.pro and scalUtils_wilsonedit.pro, which are modified forms of scripts rfiDisplay.pro and scalUtils.pro. These original scripts were written by Ron Maddalena at Green Bank Observatory (rmaddale@nrao.edu). He is now an emeritus senior scientist at the observatory, and no longer maintains these scripts. Due to this, any questions regarding these scripts should be directed towards Joy Skipper (jskipper@nrao.edu).
