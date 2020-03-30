@@ -247,7 +247,7 @@ if __name__ == '__main__':
             print("Was not able to IDL reduce file. Skipping.")
             continue
         except(TimeoutError):
-            problem_talley += 1 
+            problem_tally += 1 
             print("File processing timed out. Skipping.")
 
         print("file "+str(file_to_process['filename'])+" processed.")
