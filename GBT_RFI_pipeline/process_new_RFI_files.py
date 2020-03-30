@@ -19,7 +19,13 @@ import multiprocessing as mp
 import subprocess
 import argparse
 
+class EmptyScans(Exception):
+    pass
 
+class BadIDLProcess(Exception):
+    pass
+class TimeoutError(Exception):
+    pass
 
 
 def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI_files: str):
@@ -66,28 +72,25 @@ def read_header(file_to_be_processed: str, path_to_current_RFI_files: str):
     #line_to_start reader is counting the line in which the header ends, so that we can later read in the data of the file and skip the header
     line_to_start_reader = 0
 
-    try:
-        with open(path_to_current_RFI_files+file_to_be_processed+"/"+file_to_be_processed+".raw.vegas/"+file_to_be_processed+".raw.vegas.index") as f:
-            header = {}
+
+    with open(path_to_current_RFI_files+file_to_be_processed+"/"+file_to_be_processed+".raw.vegas/"+file_to_be_processed+".raw.vegas.index") as f:
+        header = {}
+        file_index = f.readline()
+        
+        # The equal sign indicates that this is header information, such as filename = myfile.fits
+        while(file_index):
+            if "=" in file_index: 
+                header_entry = file_index.strip().split("=")
+                header[header_entry[0]] = header_entry[1].strip()
+            # The [] signs indicate that this is a line that can be skipped
+            elif "[" in file_index: 
+                pass
+            # Once we've reached the end of the header, we want to break the line.
+            else: 
+                break
+                
             file_index = f.readline()
-            
-            # The equal sign indicates that this is header information, such as filename = myfile.fits
-            while(file_index):
-                if "=" in file_index: 
-                    header_entry = file_index.strip().split("=")
-                    header[header_entry[0]] = header_entry[1].strip()
-                # The [] signs indicate that this is a line that can be skipped
-                elif "[" in file_index: 
-                    pass
-                # Once we've reached the end of the header, we want to break the line.
-                else: 
-                    break
-                    
-                file_index = f.readline()
-                line_to_start_reader += 1
-    except(FileNotFoundError):
-        print("file not found. Skipping.")
-        return("nofile","nofile")
+            line_to_start_reader += 1
 
     return(header,line_to_start_reader)
 
@@ -120,11 +123,10 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
     data_to_process = []
     
     for file_to_be_processed in RFI_files_to_be_processed:
-
-        _, line_to_start_reader = read_header(file_to_be_processed, path_to_current_RFI_files)
-        # If there is no file, skip it
-        if line_to_start_reader == "nofile":
-            data_to_process.append("bad_file")
+        try:
+            _, line_to_start_reader = read_header(file_to_be_processed, path_to_current_RFI_files)
+        except FileNotFoundError:
+            print("file not found. Skipping.")
             continue
 
         # Read the csv-non header portion in
@@ -133,7 +135,7 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
         # If the source is unknown, this is a bad scan. Currently, the processing IDL code we are feeding this into cannot handle files with even one bad scan. 
         # This processing IDL code is in the works to be replaced with one that is more robust. 
         if "Unknown" in data["SOURCE"]:
-            data_to_process.append("bad_file")
+            print("Unknown source, skipping.")
             continue
         max_scan_number = max(data["SCAN"]) #Scans are 1-indexed
         min_scan_number = min(data["SCAN"]) 
@@ -146,7 +148,7 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
         # The receiver name is not consistent in it's naming scheme. This changes the receiver name to the GBT standardized frontend naming scheme
         verified_receiver_name = GBT_receiver_specs.FrontendVerification(receiver_name)
         if verified_receiver_name == 'Unknown':
-            data_to_process.append('bad_file')
+            print("Unknown Receiver. Skipping.")
             continue
         scanlist = list(range(min_scan_number,max_scan_number))
         
@@ -176,66 +178,34 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
 
 def analyze_file(file_to_process):
     """
-    param: file_to_process:: if the data has passed all checks up to this point, it is a dictionary containing metadata needed to process the RFI file. If it has failed its checks, it's a string containing the text "bad_file"
-    return: problem_occured; which is a boolean as to whether or not a problem occured in the attempt to process the file.
+    param: file_to_process:: if the data has passed all checks up to this point, it is a dictionary containing metadata needed to process the RFI file.
     """
     if file_to_process['list_of_scans'] == []:
-        problem_occured = True
-        return(problem_occured)
-    problem_occured = False
-    # If the file did not pass previous checks, and is simply a string containing "bad_file", do not attempt to process and simply return that a problem occured
-    if file_to_process == "bad_file":
-        problem_occured = True
-        return(problem_occured)
+        raise(EmptyScans)
     # The parameters for running the process are different if the receiver is ka (26_40) so it needs to be called separately
-    if file_to_process["frontend"] == "Rcvr26_40":
-        # Create a subprocess that calls the idl script that can process the file. 
-        process = subprocess.Popen(['gbtidl', '-e', 'offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile, /ka'])
-        # Wait 5 minutes (300 seconds) and if the file does not finish processing, kill it. It has entered an infinite loop
-        # Since this process uses gettp, an official GBTIDL module, which does not return errors when it enters an infinite loop, this is the best we can do.
-        try:
-            print('Running in process', process.pid)
-            process.wait(timeout=300)
-            # Prints the status of whether or not the subprocess occured to a file. Because of the difficulties of output communications between the IDL subprocess
-            # And the python process, it was best to communicate this status through a file
-            subprocess_success = open("stat.txt","r").read().strip('\n')
-            if subprocess_success == "bad_data":
-                problem_occured = True
-                print(problem_occured)
-            elif subprocess_success == "good_data": 
-                problem_occured = False
-                print(problem_occured)
-            else: 
-                print("somthing was wrong with the error handling of this file. Please investigate further.")
-        except subprocess.TimeoutExpired:
-            print('Timed out - killing', process.pid)
-            process.kill()
-            problem_occured = True
-    else:
-        process = subprocess.Popen(['gbtidl', '-e', 'offline, \''+str(file_to_process['filename'])+'\' & process_file,'+str(file_to_process['list_of_scans'])+', fdnum='+str(file_to_process['number_of_feeds'])+'-1, ymax='+str(file_to_process['ymax'])+', ifmax = '+str(file_to_process['number_of_IFs'])+'-1, nzoom = 0, /blnkChans, /makefile'])
+    IDL_query = 'offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile'
+    if file_to_process['frontend'] == 'Rcvr26_40':
+        IDL_query = IDL_query + ', /ka'
+    # Create a subprocess that calls the idl script that can process the file. 
+    process = subprocess.Popen(['gbtidl', '-e', IDL_query])
+    # Wait 5 minutes (300 seconds) and if the file does not finish processing, kill it. It has entered an infinite loop
+    # Since this process uses gettp, an official GBTIDL module, which does not return errors when it enters an infinite loop, this is the best we can do.
+    try:
+        print('Running in process', process.pid)
+        process.wait(timeout=300)
+        # Prints the status of whether or not the subprocess occured to a file. Because of the difficulties of output communications between the IDL subprocess
+        # And the python process, it was best to communicate this status through a file
+        subprocess_success = open("stat.txt","r").read().strip('\n')
+        if subprocess_success == "bad_data":
+            raise(BadIDLProcess)
+    except subprocess.TimeoutExpired:
+        print('Timed out - killing', process.pid)
+        process.kill()
+        raise(TimeoutError)
 
-        try:
-            print('Running in process', process.pid)
-            process.wait(timeout=300)
-            try:
-                subprocess_success = open("stat.txt","r").read().strip('\n')
-                if subprocess_success == "bad_data":
-                    problem_occured = True
-                    print(problem_occured)
-                elif subprocess_success == "good_data": 
-                    problem_occured = False
-                    print(problem_occured)
-            except: 
-                print("somthing was wrong with the error handling of this file. Please investigate further.")
-                problem_occured = True
-        except subprocess.TimeoutExpired:
-            print('Timed out - killing', process.pid)
-            process.kill()
-            problem_occured = True
     # After we're done with getting the status, go ahead and remove the stat file
     if os.path.exists('stat.txt'):
-        os.remove("stat.txt")
-    return(problem_occured)       
+        os.remove("stat.txt")      
 
 if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
@@ -265,14 +235,22 @@ if __name__ == '__main__':
     # Go through each file and process it, and tallying the number of problem files as well
     problem_tally = 0
     for file_to_process in data_to_be_processed:
-        if file_to_process == 'bad_file':
-            problem_tally += 1
-            continue
         print("processing file: "+str(file_to_process['filename']))
-        problem_occured = analyze_file(file_to_process)
-        print("file "+str(file_to_process['filename'])+" processed.")
-        if problem_occured == True: 
+        try:
+            analyze_file(file_to_process)
+        except(EmptyScans):
             problem_tally += 1
+            print("File had no scans. Skipping.")
+            continue
+        except(BadIDLProcess):
+            problem_tally += 1
+            print("Was not able to IDL reduce file. Skipping.")
+            continue
+        except(TimeoutError):
+            problem_talley += 1 
+            print("File processing timed out. Skipping.")
+
+        print("file "+str(file_to_process['filename'])+" processed.")
         
     print("All new files processed and loaded as .txt files")
     # Let the user know how many bad files there were, if any:
