@@ -176,14 +176,14 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
     return(data_to_process)
     
 
-def analyze_file(file_to_process):
+def analyze_file(file_to_process,output_directory):
     """
     param: file_to_process:: if the data has passed all checks up to this point, it is a dictionary containing metadata needed to process the RFI file.
     """
     if file_to_process['list_of_scans'] == []:
         raise(EmptyScans)
     # The parameters for running the process are different if the receiver is ka (26_40) so it needs to be called separately
-    IDL_query = 'offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile'
+    IDL_query = 'offline, \''+str(file_to_process["filename"])+'\' & .compile, process_file & CD, \''+output_directory+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile'
     if file_to_process['frontend'] == 'Rcvr26_40':
         IDL_query = IDL_query + ', /ka'
     # Create a subprocess that calls the idl script that can process the file. 
@@ -217,10 +217,11 @@ if __name__ == '__main__':
     # parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
     parser.add_argument("-main_table",help="The string name of the table to which you'd like to upload your clean RFI data (required if you have selected -upload_to_database)",type=str)
     parser.add_argument("-dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data (required if you have selected -upload_to_database)",type=str)
-
+    parser.add_argument('-output_directory',help='The directory to which you want the data to be written',type=str)
 
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
+    output_directory = args.output_directory
     
  
     
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     for file_to_process in data_to_be_processed:
         print("processing file: "+str(file_to_process['filename']))
         try:
-            analyze_file(file_to_process)
+            analyze_file(file_to_process,output_directory)
         except(EmptyScans):
             problem_tally += 1
             print("File had no scans. Skipping.")
