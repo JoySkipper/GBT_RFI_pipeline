@@ -13,7 +13,7 @@ import csv
 import pandas
 from rfitrends import GBT_receiver_specs
 from rfitrends import RFI_input_for_SQL
-from rfitrends import fxns_output_process
+from rfitrends import connection_manager
 import time
 import multiprocessing as mp
 import subprocess
@@ -179,7 +179,9 @@ def analyze_file(file_to_process):
     param: file_to_process:: if the data has passed all checks up to this point, it is a dictionary containing metadata needed to process the RFI file. If it has failed its checks, it's a string containing the text "bad_file"
     return: problem_occured; which is a boolean as to whether or not a problem occured in the attempt to process the file.
     """
-
+    if file_to_process['list_of_scans'] == []:
+        problem_occured = True
+        return(problem_occured)
     problem_occured = False
     # If the file did not pass previous checks, and is simply a string containing "bad_file", do not attempt to process and simply return that a problem occured
     if file_to_process == "bad_file":
@@ -263,6 +265,9 @@ if __name__ == '__main__':
     # Go through each file and process it, and tallying the number of problem files as well
     problem_tally = 0
     for file_to_process in data_to_be_processed:
+        if file_to_process == 'bad_file':
+            problem_tally += 1
+            continue
         print("processing file: "+str(file_to_process['filename']))
         problem_occured = analyze_file(file_to_process)
         print("file "+str(file_to_process['filename'])+" processed.")
@@ -282,11 +287,11 @@ if __name__ == '__main__':
         # database = 'jskipper'
         IP_address = args.IP_address
         database = args.database_name
-        username, password = RFI_input_for_SQL.prompt_user_login_to_database(IP_address,database)
+        connection_manager = connection_manager.connection_manager(IP_address,database)
         # Find which file to be processed
         main_table = args.main_table
         dirty_table = args.dirty_table
         print("Uploading .txt files to database")
-        RFI_input_for_SQL.write_to_database(username,password,IP_address,database,main_table,dirty_table,"./",RFI_files_to_be_processed)
+        RFI_input_for_SQL.upload_files("./",connection_manager,main_table,dirty_table)
         print("All files uploaded to database")
     

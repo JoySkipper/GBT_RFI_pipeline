@@ -22,6 +22,7 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
     endif
     ;if there's an error, catch it and send it to bad data. 
 
+    ; Run rfiscansmod, Ron's script which processes the file and produces a .txt file and 4 gif plots
     status = rfiscans_Mod(scanlist, fdnum = fdnum, ifmax = ifmax, ymax = ymax, nzoom = nzoom , blnkChans=blnkChans, makefile=makefile, ka=ka)
     common gbtplot_common, mystate, xarray 
     ; rfiscans mod opens a plot, which we need to close to go to the next plot
