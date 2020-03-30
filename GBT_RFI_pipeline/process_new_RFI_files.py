@@ -183,7 +183,7 @@ def analyze_file(file_to_process,output_directory):
     if file_to_process['list_of_scans'] == []:
         raise(EmptyScans)
     # The parameters for running the process are different if the receiver is ka (26_40) so it needs to be called separately
-    IDL_query = 'offline, \''+str(file_to_process["filename"])+'\' & .compile, process_file & CD, \''+output_directory+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile'
+    IDL_query = 'offline, \''+str(file_to_process["filename"])+'\' & .compile process_file & CD, \''+output_directory+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, /blnkChans, /makefile'
     if file_to_process['frontend'] == 'Rcvr26_40':
         IDL_query = IDL_query + ', /ka'
     # Create a subprocess that calls the idl script that can process the file. 
