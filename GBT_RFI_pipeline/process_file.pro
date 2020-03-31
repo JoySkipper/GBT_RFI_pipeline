@@ -8,11 +8,12 @@
 @./scalUtils.pro
 @./rfiDisplay_wilsonedit.pro
 
+
 pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom, ymax=ymax, $
                 zfactor=zfactor, instance=instance, makegifs=makegifs, makefile=makefile, ka=ka, $
                 nbox=nbox, tau=tau, ap_eff=ap_eff, fltrParms=fltrParms, blnkWdth=blnkWdth, $
                 blnkChans=blnkChans, blnkFreqs=blnkFreqs, flagFreqs=flagFreqs, colors=colors, pols=pols, $
-                calseqList=calseqList
+                calseqList=calseqList,output_file=output_file
     CATCH, Error_status 
     if Error_status NE 0 then begin
         openw, status_file, 'stat.txt',/GET_LUN
@@ -21,6 +22,8 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
         CATCH,/CANCEL
     endif
     ;if there's an error, catch it and send it to bad data. 
+
+    CD, output_file
 
     ; Run rfiscansmod, Ron's script which processes the file and produces a .txt file and 4 gif plots
     status = rfiscans_Mod(scanlist, fdnum = fdnum, ifmax = ifmax, ymax = ymax, nzoom = nzoom , blnkChans=blnkChans, makefile=makefile, ka=ka)
