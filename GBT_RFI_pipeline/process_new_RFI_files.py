@@ -38,13 +38,19 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
     processed_RFI_files = []
     RFI_files_to_be_processed = []
 
+    try:
+        with open(path_to_processed_RFI_files+'files_not_able_to_be_processed.txt','r') as bad_list_file:
+            bad_projects = bad_list_file.read().splitlines()
+    except(IOError):
+        bad_projects = []
+
     # This for loop gathers a list of processed RFI files from the directory in which they're contained
     for processed_file in os.listdir(path_to_processed_RFI_files): 
         if processed_file.endswith(".txt") and processed_file != "URLS.txt": # We only care about the .txt files containing actual data of RFI
             processed_RFI_files.append(processed_file)
     # This for loop goes through all the RFI files still in sdfits and that haven't been archived, finds those that needs to be processed, and appends them to RFI_files_to_be_processed        
     for current_RFI_file in os.listdir(path_to_current_RFI_files): 
-        if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files):
+        if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files) and current_RFI_file not in bad_projects:
             RFI_files_to_be_processed.append(current_RFI_file)
 
     return(RFI_files_to_be_processed)
@@ -172,7 +178,6 @@ def find_parameters_to_process_file(RFI_files_to_be_processed: list,path_to_curr
         data_to_process.append(oneline_data_to_be_processed)
 
         print(str(file_to_be_processed)+" parameter data gleaned")
-        
     return(data_to_process)
     
 
@@ -210,14 +215,15 @@ def analyze_file(file_to_process,output_directory):
 if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
     parser.add_argument("current_path",help="The path to the current RFI files, of which some will be the new files waiting to be processed")
-    parser.add_argument("--skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no. If this is selected, you must give the path to files that you know have already been processed.",type=str)
+    parser.add_argument("-skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no. If this is selected, you must give the path to files that you know have already been processed.",type=str)
+    parser.add_argument('-output_directory',help='The directory to which you want the data to be written',type=str)
     parser.add_argument("--upload_to_database",help="a flag to determine if you want to upload the txt files to a given database",action="store_true")
     parser.add_argument("-IP_address",help="The IP address of the database to which you want to upload (required if you have selected -upload_to_database) ",type=str)
     parser.add_argument("-database_name",help="The name of the database to which you want to upload (required if you have selected -upload_to_database)",type=str)
     # parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
     parser.add_argument("-main_table",help="The string name of the table to which you'd like to upload your clean RFI data (required if you have selected -upload_to_database)",type=str)
     parser.add_argument("-dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data (required if you have selected -upload_to_database)",type=str)
-    parser.add_argument('-output_directory',help='The directory to which you want the data to be written',type=str)
+    
 
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
@@ -235,20 +241,25 @@ if __name__ == '__main__':
     data_to_be_processed = find_parameters_to_process_file(RFI_files_to_be_processed,path_to_current_RFI_files)
     # Go through each file and process it, and tallying the number of problem files as well
     problem_tally = 0
+    
+    with open(path_to_processed_RFI_files+'files_not_able_to_be_processed.txt','a+') as bad_list_file:
     for file_to_process in data_to_be_processed:
         print("processing file: "+str(file_to_process['filename']))
         try:
             analyze_file(file_to_process,output_directory)
         except(EmptyScans):
             problem_tally += 1
+                bad_list_file.write(file_to_process['filename']+'\n')
             print("File had no scans. Skipping.")
             continue
         except(BadIDLProcess):
             problem_tally += 1
+                bad_list_file.write(file_to_process['filename']+'\n')
             print("Was not able to IDL reduce file. Skipping.")
             continue
         except(TimeoutError):
             problem_tally += 1 
+                bad_list_file.write(file_to_process['filename']+'\n')
             print("File processing timed out. Skipping.")
 
         print("file "+str(file_to_process['filename'])+" processed.")
