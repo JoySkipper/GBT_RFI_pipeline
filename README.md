@@ -28,7 +28,7 @@ If you place any of the text files into the path of this argument, the pipeline 
 
 3.) --upload_to_database decides if you'd like to upload the produced data to an SQL database. If this is selected, you will need to provide 4 arguments:
     
-    a.) host_name: the host name of the machine that the SQL database that you would like to upload your data to lives on
+    a.) host_name: the host name of the machine containing the SQL database that you would like to upload your data to
     
     b.) database_name: the name of that SQL database that you would like to upload your data to
     
@@ -45,7 +45,7 @@ python process_new_RFI_files.py </path/to/raw/RFI/data/to/process>
 
 Output results will be dumped into your current directory for this setup. Ensure you have write permissions to your current working directory
 
-This pipeline generates four (4) .gif images of varying zoom levels and an ASCII text file containing reduced RFI intensity values vs. frequency values and corresponding header information.
+This pipeline generates an ASCII text file containing reduced RFI intensity values vs. frequency values and corresponding header information.
 
 ## Recommended method example: 
 
