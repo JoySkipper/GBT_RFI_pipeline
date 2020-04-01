@@ -218,21 +218,33 @@ if __name__ == '__main__':
     parser.add_argument("-skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no. If this is selected, you must give the path to files that you know have already been processed.",type=str)
     parser.add_argument('-output_directory',help='The directory to which you want the data to be written',type=str)
     parser.add_argument("--upload_to_database",help="a flag to determine if you want to upload the txt files to a given database",action="store_true")
-    parser.add_argument("-IP_address",help="The IP address of the database to which you want to upload (required if you have selected -upload_to_database) ",type=str)
+    parser.add_argument("-host_name",help="The host name of the machine containing the database to which you want to upload (required if you have selected -upload_to_database) ",type=str)
     parser.add_argument("-database_name",help="The name of the database to which you want to upload (required if you have selected -upload_to_database)",type=str)
-    # parser.add_argument("processed_path",help="The path to the already processed RFI files, to compare with the current_path and see which files have not been yet processed")
     parser.add_argument("-main_table",help="The string name of the table to which you'd like to upload your clean RFI data (required if you have selected -upload_to_database)",type=str)
-    parser.add_argument("-dirty_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data (required if you have selected -upload_to_database)",type=str)
+    parser.add_argument("-bad_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data (required if you have selected -upload_to_database)",type=str)
     
 
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
-    output_directory = args.output_directory
+    # If an output directory is provided, use that. Otherwise, output to the current directory. 
+    if not args.output_directory:
+        output_directory = "./"
+    else: 
+        output_directory = args.output_directory
     
  
     
     if args.skipalreadyprocessed:
         path_to_processed_RFI_files = args.skipalreadyprocessed
+        # If you specified 'output_directory' as the path to processed RFI files, then we need to check that you also specified the output_directory flag
+        if path_to_processed_RFI_files == 'output_directory':
+            if args.output_directory is None: 
+                # If you didn't, raise an error
+                parser.error("Specifying -skipalreadyprocessed with 'output_directory' requires you to specify the -output_directory flag.")
+            # If you did, then we can set the path to the output directory given
+            else:
+                path_to_processed_RFI_files = args.output_directory
+        # Regardless of where you get the path to processed RFI files, you need to then get the data to be processed from each file
         RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
         # Get the data to be processed from each file
     else:
@@ -243,26 +255,26 @@ if __name__ == '__main__':
     problem_tally = 0
     
     with open(path_to_processed_RFI_files+'files_not_able_to_be_processed.txt','a+') as bad_list_file:
-    for file_to_process in data_to_be_processed:
-        print("processing file: "+str(file_to_process['filename']))
-        try:
-            analyze_file(file_to_process,output_directory)
-        except(EmptyScans):
-            problem_tally += 1
+        for file_to_process in data_to_be_processed:
+            print("processing file: "+str(file_to_process['filename']))
+            try:
+                analyze_file(file_to_process,output_directory)
+            except(EmptyScans):
+                problem_tally += 1
                 bad_list_file.write(file_to_process['filename']+'\n')
-            print("File had no scans. Skipping.")
-            continue
-        except(BadIDLProcess):
-            problem_tally += 1
+                print("File had no scans. Skipping.")
+                continue
+            except(BadIDLProcess):
+                problem_tally += 1
                 bad_list_file.write(file_to_process['filename']+'\n')
-            print("Was not able to IDL reduce file. Skipping.")
-            continue
-        except(TimeoutError):
-            problem_tally += 1 
+                print("Was not able to IDL reduce file. Skipping.")
+                continue
+            except(TimeoutError):
+                problem_tally += 1 
                 bad_list_file.write(file_to_process['filename']+'\n')
-            print("File processing timed out. Skipping.")
+                print("File processing timed out. Skipping.")
 
-        print("file "+str(file_to_process['filename'])+" processed.")
+            print("file "+str(file_to_process['filename'])+" processed.")
         
     print("All new files processed and loaded as .txt files")
     # Let the user know how many bad files there were, if any:
@@ -271,17 +283,16 @@ if __name__ == '__main__':
     else: 
         print("all files processed successfully")
     if args.upload_to_database: 
-        if args.IP_address is None or args.database_name is None or args.main_table is None or args.dirty_table is None:
-            parser.error("--upload_to_database requires -IP_address, -database_name, -main_table, and -dirty_table.")
-        # IP_address = '192.33.116.22'
-        # database = 'jskipper'
-        IP_address = args.IP_address
+        if args.host_name is None or args.database_name is None or args.main_table is None or args.bad_table is None:
+            parser.error("--upload_to_database requires -IP_address, -database_name, -main_table, and -bad_table.")
+        host_name = args.host_name
         database = args.database_name
-        connection_manager = connection_manager.connection_manager(IP_address,database)
+        connection_manager = connection_manager.connection_manager(host_name,database)
         # Find which file to be processed
         main_table = args.main_table
-        dirty_table = args.dirty_table
+        bad_table = args.bad_table
         print("Uploading .txt files to database")
-        RFI_input_for_SQL.upload_files("./",connection_manager,main_table,dirty_table)
+        filepaths_to_process = RFI_input_for_SQL.gather_filepaths_to_process(path_to_processed_RFI_files)
+        RFI_input_for_SQL.upload_files(filepaths_to_process,connection_manager,main_table,bad_table)
         print("All files uploaded to database")
     
