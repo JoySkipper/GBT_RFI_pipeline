@@ -103,7 +103,7 @@ setup(
     author_email=EMAIL,
     dependency_links =[
         'http://github.com/JoySkipper/GBT_RFI_Analysis_Tool/'
-    ]
+    ],
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
