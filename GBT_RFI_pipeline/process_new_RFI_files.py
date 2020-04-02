@@ -212,7 +212,7 @@ def analyze_file(file_to_process,output_directory):
     if os.path.exists('stat.txt'):
         os.remove("stat.txt")      
 
-if __name__ == '__main__': 
+def main():
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
     parser.add_argument("current_path",help="The path to the current RFI files, of which some will be the new files waiting to be processed")
     parser.add_argument("-skipalreadyprocessed",help="a flag to determine if you want to reprocess files that have already been processed or no. If this is selected, you must give the path to files that you know have already been processed.",type=str)
@@ -296,3 +296,5 @@ if __name__ == '__main__':
         RFI_input_for_SQL.upload_files(filepaths_to_process,connection_manager,main_table,bad_table)
         print("All files uploaded to database")
     
+if __name__ == '__main__': 
+    main()
