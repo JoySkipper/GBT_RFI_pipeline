@@ -101,6 +101,9 @@ setup(
     long_description_content_type='text/markdown',
     author=AUTHOR,
     author_email=EMAIL,
+    dependency_links =[
+        'http://github.com/JoySkipper/GBT_RFI_Analysis_Tool/'
+    ]
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
@@ -108,6 +111,9 @@ setup(
     # py_modules=['mypackage'],
 
     entry_points={
+        "console_scripts": [
+            "processgbtrfi = GBT_RFI_pipeline.process_new_RFI_files:main",
+        ]
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
