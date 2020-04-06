@@ -2,13 +2,19 @@
 Pipeline for reducing and extracting useful information from the Green Bank Telescope RFI scans 
 
 ## Installation Requirements
-* Python 3.5+ (setup.py coming soon!)
-    * NumPy
-    * Pandas
-* GBTIDL v2.10.1 (http://gbtidl.nrao.edu/)
-* GBT_RFI_Analysis_Tool (https://github.com/JoySkipper/GBT_RFI_Analysis_Tool)
+* Python 3.5+
+* GBTIDL v2.10.1 (http://gbtidl.nrao.edu/) - installed on all GBO machines
+* MySQL (www.mysql.com) - installed on all GBO machines
 * gifclip (http://giflib.sourceforge.net/gifclip.html)
   * Users who are not interested in producing .gif images may elect not to install gifclip.
+
+## Installation Instructions
+
+Once obtaining all the requirements, simply type this in the terminal in your desired environment:
+
+```console
+pip install git+https://github.com/JoySkipper/GBT_RFI_pipeline.git
+```
 
 ## Prerequisites
 * You should be in possession of RFI data from the Green Bank Telescope in SDFITS format.
