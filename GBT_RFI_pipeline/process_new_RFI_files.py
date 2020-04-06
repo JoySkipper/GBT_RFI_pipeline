@@ -13,7 +13,8 @@ import csv
 import pandas
 from rfitrends import GBT_receiver_specs
 from rfitrends import RFI_input_for_SQL
-from rfitrends import connection_manager
+#from rfitrends import connection_manager
+import rfitrends
 import time
 import multiprocessing as mp
 import subprocess
@@ -253,7 +254,7 @@ def main():
             parser.error("--upload_to_database requires -IP_address, -database_name, -main_table, and -bad_table.")  
         host_name = args.host_name
         database = args.database_name
-        connection_manager = connection_manager.connection_manager(host_name,database)     
+        connection_manager = rfitrends.connection_manager.connection_manager(host_name,database)     
    
     if args.skipalreadyprocessed:
         path_to_processed_RFI_files = args.skipalreadyprocessed
