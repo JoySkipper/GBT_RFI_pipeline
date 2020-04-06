@@ -18,6 +18,8 @@ import time
 import multiprocessing as mp
 import subprocess
 import argparse
+import tempfile
+import pathlib
 
 class EmptyScans(Exception):
     pass
@@ -188,11 +190,23 @@ def analyze_file(file_to_process,output_directory):
     if file_to_process['list_of_scans'] == []:
         raise(EmptyScans)
     # The parameters for running the process are different if the receiver is ka (26_40) so it needs to be called separately
-    IDL_query = 'offline, \''+str(file_to_process["filename"])+'\' & process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, output_file=\''+output_directory+'\', /blnkChans, /makefile'
+    # Unfortunately IDL does not have an easy way to access module data, so we have to actually navigate to the appropriate directory
+    path = str(pathlib.Path(__file__).parent.absolute())+'/'
+    temp_path = tempfile.gettempdir()+'/'
+    temp_file = open(temp_path+"temp_file.pro","w+")
+    temp_file.write('.compile '+path+'scalUtils_wilsonedit.pro\n')
+    temp_file.write('.compile '+path+'rfiDisplay_wilsonedit.pro\n')
+    temp_file.write('.compile '+path+'process_file\n')
+    temp_file.write('offline,  \''+str(file_to_process["filename"])+'\' \n')
+    temp_file.write('process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, output_file=\''+temp_path+'\', /blnkChans, /makefile')
     if file_to_process['frontend'] == 'Rcvr26_40':
-        IDL_query = IDL_query + ', /ka'
+        temp_file.write(', /ka\n')
+    else:
+        temp_file.write('\n')
+    temp_file.write('exit')
+    temp_file.close()
     # Create a subprocess that calls the idl script that can process the file. 
-    process = subprocess.Popen(['gbtidl', '-e', IDL_query])
+    process = subprocess.Popen(['gbtidl', temp_path+'temp_file.pro'])
     # Wait 5 minutes (300 seconds) and if the file does not finish processing, kill it. It has entered an infinite loop
     # Since this process uses gettp, an official GBTIDL module, which does not return errors when it enters an infinite loop, this is the best we can do.
     try:
@@ -200,7 +214,7 @@ def analyze_file(file_to_process,output_directory):
         process.wait(timeout=300)
         # Prints the status of whether or not the subprocess occured to a file. Because of the difficulties of output communications between the IDL subprocess
         # And the python process, it was best to communicate this status through a file
-        subprocess_success = open("stat.txt","r").read().strip('\n')
+        subprocess_success = open(temp_path+"stat.txt","r").read().strip('\n')
         if subprocess_success == "bad_data":
             raise(BadIDLProcess)
     except subprocess.TimeoutExpired:
@@ -208,9 +222,12 @@ def analyze_file(file_to_process,output_directory):
         process.kill()
         raise(TimeoutError)
 
-    # After we're done with getting the status, go ahead and remove the stat file
-    if os.path.exists('stat.txt'):
-        os.remove("stat.txt")      
+    # After we're done with getting the status, go ahead and remove the stat and temporary idl file
+    def remove_file(temp_path,filename):
+        if os.path.exists(temp_path+filename):
+            os.remove(temp_path+filename)
+    remove_file(temp_path,'stat.txt')
+    remove_file(temp_path,'temp_file.pro')
 
 def main():
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
@@ -297,4 +314,9 @@ def main():
         print("All files uploaded to database")
     
 if __name__ == '__main__': 
+    import ptvsd 
+    # Allow other computers to attach to ptvsd at this IP address and port. 
+    # (Remove this is not running through debugger)
+    ptvsd.enable_attach(address=('10.16.96.210', 3001), redirect_output=True) 
+    ptvsd.wait_for_attach()
     main()

@@ -5,8 +5,6 @@
 
 ; Importing the current GBTIDL processing script
 
-@./scalUtils.pro
-@./rfiDisplay_wilsonedit.pro
 
 
 pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom, ymax=ymax, $
@@ -16,7 +14,7 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
                 calseqList=calseqList,output_file=output_file
     CATCH, Error_status 
     if Error_status NE 0 then begin
-        openw, status_file, 'stat.txt',/GET_LUN
+        openw, status_file, output_file+'stat.txt',/GET_LUN
         printf, status_file, "bad_data"
         print,Error_status
         FREE_LUN, status_file
@@ -24,7 +22,7 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
     endif
     ;if there's an error, catch it and send it to bad data. 
 
-    CD, output_file
+    ;CD, output_file
 
     ; Run rfiscansmod, Ron's script which processes the file and produces a .txt file and 4 gif plots
     status = rfiscans_Mod(scanlist, fdnum = fdnum, ifmax = ifmax, ymax = ymax, nzoom = nzoom , blnkChans=blnkChans, makefile=makefile, ka=ka)
@@ -33,12 +31,15 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
     widget_control, mystate.main, /DESTROY
     print, "plot closed" 
     ; open the next file
-    openw, status_file, 'stat.txt',/GET_LUN
+    openw, status_file, output_file+'stat.txt',/GET_LUN
+    print, 'writing status to file '+output_file+'stat.txt...'
     ; print to file 
     if status then begin
+        print,'printing'+status
         printf, status_file, status
         FREE_LUN, status_file
     endif else begin
+        print, 'printing good data'
         printf, status_file, "good_data"
         FREE_LUN, status_file
     endelse
