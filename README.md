@@ -65,7 +65,9 @@ This example generates a .txt file containing the reduced data, dumps it to the 
 
 ## How do I know it's working correctly? What output and feedback should I expect? 
 
-There are several stages of this script. 
+There are several stages of this script.
+
+If you are uploading to a database, it will first ask for the credentials to access the database. Then it will move on to the various stages of processing:
 
 ### Stage 1: 
 
@@ -206,9 +208,11 @@ This will repeat until all the RFI files are processed, which will take some tim
 
 If you see some files that say they contained "bad data" and are skipped, this is normal. A minority of the files become corrupted and are skipped over and flagged as bad files. If you see that all of the files being processed are skipped, please contact the maintainer of this code to double-check if there are issues (jskipper@nrao.edu).
 
+If you did not elect to upload these files to the database, the script will end here. If you did, it will move on to stage 3: 
+
 ### Stage 3:
 
-Once this is finished, it will then upload all new files to the database in the directory you provided, not necessarily just the ones processed in this script run. So if you start processing the files, have to stop, then start again, and finally finish all the files, it will process all of those that you processed even though your script was interrupted. 
+The script then uploads all new files to the database in the directory you provided, not necessarily just the ones processed in this script run. So if you start processing the files, have to stop, then start again, and finally finish all the files, it will process all of those that you processed even though your script was interrupted. 
 
 The output for uploading the files looks like this: 
 
