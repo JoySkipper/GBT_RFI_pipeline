@@ -17,7 +17,7 @@ DESCRIPTION = 'A tool to automatically process GBT RFI data and output .txt file
 URL = 'https://github.com/JoySkipper/GBT_RFI_pipeline'
 EMAIL = 'jskipper@nrao.edu'
 AUTHOR = 'Joy Skipper'
-REQUIRES_PYTHON = '>=3.7.2'
+REQUIRES_PYTHON = '>=3.6.8'
 VERSION = "0.0.5"
 
 # What packages are required for this module to be executed?
