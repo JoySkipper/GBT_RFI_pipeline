@@ -35,7 +35,7 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
     print, 'writing status to file '+output_file+'stat.txt...'
     ; print to file 
     if status then begin
-        print,'printing'+status
+        print,'printing '+status
         printf, status_file, status
         FREE_LUN, status_file
     endif else begin

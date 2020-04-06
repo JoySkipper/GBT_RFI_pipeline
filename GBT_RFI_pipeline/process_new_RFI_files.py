@@ -240,13 +240,6 @@ def main():
     parser.add_argument("-main_table",help="The string name of the table to which you'd like to upload your clean RFI data (required if you have selected -upload_to_database)",type=str)
     parser.add_argument("-bad_table",help="The string name of the table to which you'd like to upload your flagged or bad RFI data (required if you have selected -upload_to_database)",type=str)
     
-    if args.upload_to_database: 
-        if args.host_name is None or args.database_name is None or args.main_table is None or args.bad_table is None:
-            parser.error("--upload_to_database requires -IP_address, -database_name, -main_table, and -bad_table.")  
-        host_name = args.host_name
-        database = args.database_name
-        connection_manager = connection_manager.connection_manager(host_name,database)  
-
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
     # If an output directory is provided, use that. Otherwise, output to the current directory. 
@@ -254,9 +247,14 @@ def main():
         output_directory = "./"
     else: 
         output_directory = args.output_directory
-    
- 
-    
+
+    if args.upload_to_database: 
+        if args.host_name is None or args.database_name is None or args.main_table is None or args.bad_table is None:
+            parser.error("--upload_to_database requires -IP_address, -database_name, -main_table, and -bad_table.")  
+        host_name = args.host_name
+        database = args.database_name
+        connection_manager = connection_manager.connection_manager(host_name,database)     
+   
     if args.skipalreadyprocessed:
         path_to_processed_RFI_files = args.skipalreadyprocessed
         # If you specified 'output_directory' as the path to processed RFI files, then we need to check that you also specified the output_directory flag
@@ -315,9 +313,4 @@ def main():
         print("All files uploaded to database")
     
 if __name__ == '__main__': 
-    import ptvsd 
-    # Allow other computers to attach to ptvsd at this IP address and port. 
-    # (Remove this is not running through debugger)
-    ptvsd.enable_attach(address=('10.16.96.210', 3001), redirect_output=True) 
-    ptvsd.wait_for_attach()
     main()
