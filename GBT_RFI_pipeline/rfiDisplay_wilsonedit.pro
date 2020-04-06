@@ -344,7 +344,7 @@ FUNCTION rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=
                 zfactor=zfactor, instance=instance, makegifs=makegifs, makefile=makefile, ka=ka, $
                 nbox=nbox, tau=tau, ap_eff=ap_eff, fltrParms=fltrParms, blnkWdth=blnkWdth, $
                 blnkChans=blnkChans, blnkFreqs=blnkFreqs, flagFreqs=flagFreqs, colors=colors, pols=pols, $
-                calseqList=calseqList
+                calseqList=calseqList, output_file=output_file
 
 ; Necessary parameters: 
 ;   scanList = A scan number or a list of scan numbers.  Examples: 5 or [1,3,5]
@@ -653,7 +653,7 @@ FUNCTION rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=
 
         ; Open the TXT file that will contain the data
         print,'Writing ASCII data to ', filename + '.txt, using rfiscans_mod fxn'
-        openw, lun, filename + '.txt', /GET_LUN
+        openw, lun, output_file+filename + '.txt', /GET_LUN
 
         ; Add a header to the text file
         printf, lun, "################ HEADER #################"
