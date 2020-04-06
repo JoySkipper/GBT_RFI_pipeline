@@ -18,11 +18,11 @@ URL = 'https://github.com/JoySkipper/GBT_RFI_pipeline'
 EMAIL = 'jskipper@nrao.edu'
 AUTHOR = 'Joy Skipper'
 REQUIRES_PYTHON = '>=3.7.2'
-VERSION = None
+VERSION = "0.0.5"
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy','pandas','GBT_RFI_Analysis_Tool'
+    'numpy','pandas','rfitrends @ git+https://github.com/JoySkipper/GBT_RFI_Analysis_Tool.git',
 ]
 
 # What packages are optional?
@@ -101,9 +101,6 @@ setup(
     long_description_content_type='text/markdown',
     author=AUTHOR,
     author_email=EMAIL,
-    dependency_links =[
-        'http://github.com/JoySkipper/GBT_RFI_Analysis_Tool/'
-    ],
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
@@ -117,7 +114,7 @@ setup(
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
-    package_data={'': ['*.png','*.conf']},
+    package_data={'': ['*.png','*.conf','*.pro']},
     #include_package_data=True,
     license='MIT',
     classifiers=[
@@ -134,4 +131,5 @@ setup(
     cmdclass={
         'upload': UploadCommand,
     },
+    include_package_data=True,
 )
