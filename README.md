@@ -59,7 +59,7 @@ This pipeline generates an ASCII text file containing reduced RFI intensity valu
 python process_new_RFI_files.py '</path/to/raw/RFI/data/to/process>' -output_directory '</path/to/output/directory>' -skipalreadyprocessed 'output_directory' --upload_to_database -host_name <my_host_name> -database_name <my_database_name> -main_table <my_main_table> -bad_table <my_bad_data_table>
 ```
 
-Output results will be dumped to the specified directory for this setup. Ensure you have write permissions to your current working directory. 
+Output results will be dumped to the specified directory for this setup. Ensure you have write permissions to the specified directory. 
 
 This example generates a .txt file containing the reduced data, dumps it to the output directory, as well as loads that same data into the specified SQL database. 
 
