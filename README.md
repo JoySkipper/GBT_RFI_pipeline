@@ -88,6 +88,8 @@ TRFI_040220_S1 parameter data gleaned
 TRFI_040420_81 parameter data gleaned
 ```
 
+These are all the files to be processed during stage 2. It shows that the metadata necessary to process the files was successfully gleaned from the files. 
+
 ### Stage 2:
 
 Afterwards, IDL sessions will pop up and be exited out as the script processes each RFI file. It will print that the file has been written correctly if this is the case. Here is an example of the kind of output you will see: 
@@ -198,13 +200,13 @@ plot closed
 writing status to file /tmp/stat.txt...
 printing good_data
 file TRFI_040520_C1 processed.
-
+```
 
 This will repeat until all the RFI files are processed, which will take some time. Feel free to kill the session and start it up later. It will not affect the processing.
 
 If you see some files that say they contained "bad data" and are skipped, this is normal. A minority of the files become corrupted and are skipped over and flagged as bad files. If you see that all of the files being processed are skipped, please contact the maintainer of this code to double-check if there are issues (jskipper@nrao.edu).
 
-### Stage 4:
+### Stage 3:
 
 Once this is finished, it will then upload all new files to the database in the directory you provided, not necessarily just the ones processed in this script run. So if you start processing the files, have to stop, then start again, and finally finish all the files, it will process all of those that you processed even though your script was interrupted. 
 
