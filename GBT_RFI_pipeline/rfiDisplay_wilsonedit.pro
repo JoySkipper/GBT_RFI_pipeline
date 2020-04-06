@@ -262,7 +262,7 @@ pro writeDC, filename, buffer=buffer, freqMin=freqMin, freqMax=freqMax
     nchans=n_elements(getdata(buffer))
 
     ; Open the TXT file that will contain the data
-    print,'Writing ASCII data to ', filename + '.txt'
+    print,'Writing ASCII data to ', filename + '.txt, using writeDC'
     openw, lun, filename + '.txt', /GET_LUN
 
     ; Add a header to the text file
@@ -652,7 +652,7 @@ FUNCTION rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=
     if keyword_set(makefile) then begin 
 
         ; Open the TXT file that will contain the data
-        print,'Writing ASCII data to ', filename + '.txt'
+        print,'Writing ASCII data to ', filename + '.txt, using rfiscans_mod fxn'
         openw, lun, filename + '.txt', /GET_LUN
 
         ; Add a header to the text file
@@ -721,10 +721,11 @@ FUNCTION rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=
 
      end
 
-     data_free, dc_Arr
-     emptystack
-     clear
-     sclear
+    data_free, dc_Arr
+    emptystack
+    clear
+    sclear
+    print, 'Data Successfully written.'
     return, "good_data"
 end
 
