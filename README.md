@@ -46,7 +46,7 @@ If you place any of the text files into the path of this argument, the pipeline 
 ## Simplest working example:
 
 ```console
-python process_new_RFI_files.py </path/to/raw/RFI/data/to/process>
+processgbtrfi </path/to/raw/RFI/data/to/process>
 ```
 
 Output results will be dumped into your current directory for this setup. Ensure you have write permissions to your current working directory
@@ -56,7 +56,7 @@ This pipeline generates an ASCII text file containing reduced RFI intensity valu
 ## Recommended method example: 
 
 ```console
-python process_new_RFI_files.py '</path/to/raw/RFI/data/to/process>' -output_directory '</path/to/output/directory>' -skipalreadyprocessed 'output_directory' --upload_to_database -host_name <my_host_name> -database_name <my_database_name> -main_table <my_main_table> -bad_table <my_bad_data_table>
+processgbtrfi '</path/to/raw/RFI/data/to/process>' -output_directory '</path/to/output/directory>' -skipalreadyprocessed 'output_directory' --upload_to_database -host_name <my_host_name> -database_name <my_database_name> -main_table <my_main_table> -bad_table <my_bad_data_table>
 ```
 
 Output results will be dumped to the specified directory for this setup. Ensure you have write permissions to the specified directory. 
