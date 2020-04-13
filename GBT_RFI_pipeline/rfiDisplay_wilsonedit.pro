@@ -255,7 +255,7 @@ pro zoomGifs, filename, zfactor=zfactor, nzoom=nzoom
     end
 end
 
-pro writeDC, filename, buffer=buffer, freqMin=freqMin, freqMax=freqMax
+pro writeDC, filename, buffer=buffer, freqMin=freqMin, freqMax=freqMax, output_file=output_file
 
     if (n_elements(buffer) eq 0) then buffer = 0
 
@@ -263,7 +263,7 @@ pro writeDC, filename, buffer=buffer, freqMin=freqMin, freqMax=freqMax
 
     ; Open the TXT file that will contain the data
     print,'Writing ASCII data to ', filename + '.txt, using writeDC'
-    openw, lun, filename + '.txt', /GET_LUN
+    openw, lun, output_file+filename + '.txt', /GET_LUN
 
     ; Add a header to the text file
     printf, lun, "################ HEADER #################"
@@ -652,7 +652,7 @@ FUNCTION rfiScans_Mod, scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=
     if keyword_set(makefile) then begin 
 
         ; Open the TXT file that will contain the data
-        print,'Writing ASCII data to ', filename + '.txt, using rfiscans_mod fxn'
+        print,'Writing ASCII data to ', output_file+filename + '.txt, using rfiscans_mod fxn'
         openw, lun, output_file+filename + '.txt', /GET_LUN
 
         ; Add a header to the text file
