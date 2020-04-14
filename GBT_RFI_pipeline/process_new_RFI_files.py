@@ -235,6 +235,11 @@ def analyze_file(file_to_process,output_directory):
     remove_file(temp_path,'stat.txt')
     remove_file(temp_path,'temp_file.pro')
 
+def add_slash_if_needed(path):
+    # Tired of forgetting to put '/' at the end of my path and having it break everything
+    if path[-1] != '/':
+        path = path += '/'
+
 def main():
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
     parser.add_argument("current_path",help="The path to the current RFI files, of which some will be the new files waiting to be processed")
@@ -248,11 +253,13 @@ def main():
     
     args = parser.parse_args()
     path_to_current_RFI_files = args.current_path
+    
     # If an output directory is provided, use that. Otherwise, output to the current directory. 
     if not args.output_directory:
         output_directory = "./"
     else: 
-        output_directory = args.output_directory
+        output_directory = add_slash_if_needed(args.output_directory)
+
 
     if args.upload_to_database: 
         if args.host_name is None or args.database_name is None or args.main_table is None or args.bad_table is None:
@@ -262,15 +269,15 @@ def main():
         connection_manager = rfitrends.connection_manager.connection_manager(host_name,database)     
    
     if args.skipalreadyprocessed:
-        path_to_processed_RFI_files = args.skipalreadyprocessed
+        path_to_processed_RFI_files = add_slash_if_needed(args.skipalreadyprocessed)
         # If you specified 'output_directory' as the path to processed RFI files, then we need to check that you also specified the output_directory flag
-        if path_to_processed_RFI_files == 'output_directory':
+        if path_to_processed_RFI_files == 'output_directory/':
             if args.output_directory is None: 
                 # If you didn't, raise an error
                 parser.error("Specifying -skipalreadyprocessed with 'output_directory' requires you to specify the -output_directory flag.")
             # If you did, then we can set the path to the output directory given
             else:
-                path_to_processed_RFI_files = args.output_directory
+                path_to_processed_RFI_files = output_directory
         # Regardless of where you get the path to processed RFI files, you need to then get the data to be processed from each file
         RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
         # Get the data to be processed from each file
