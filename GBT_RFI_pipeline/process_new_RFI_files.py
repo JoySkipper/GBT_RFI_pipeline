@@ -37,7 +37,7 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
     :param path_to_processed_RFI_files: This is the path that should contain any RFI files you don't want repeated
     :return: Returns RFI_files_to_be_processed, which is all the names of files that still need go through the processing script
     """
-
+    print("beginning to determine files to be processed.")
     processed_RFI_files = []
     RFI_files_to_be_processed = []
 
@@ -46,15 +46,18 @@ def determine_new_RFI_files(path_to_current_RFI_files: str,path_to_processed_RFI
             bad_projects = bad_list_file.read().splitlines()
     except(IOError):
         bad_projects = []
+    print("found bad projects, skipping "+str(len(bad_projects))+" bad projects.")
 
     # This for loop gathers a list of processed RFI files from the directory in which they're contained
     for processed_file in os.listdir(path_to_processed_RFI_files): 
         if processed_file.endswith(".txt") and processed_file != "URLS.txt": # We only care about the .txt files containing actual data of RFI
             processed_RFI_files.append(processed_file)
+    print("found files already processed. Found "+str(len(processed_RFI_files))+" already processed files.")
     # This for loop goes through all the RFI files still in sdfits and that haven't been archived, finds those that needs to be processed, and appends them to RFI_files_to_be_processed        
     for current_RFI_file in os.listdir(path_to_current_RFI_files): 
         if current_RFI_file.startswith("TRFI") and not any(current_RFI_file in s for s in processed_RFI_files) and current_RFI_file not in bad_projects:
             RFI_files_to_be_processed.append(current_RFI_file)
+    print("found files to be processed. Found "+str(len(RFI_files_to_be_processed))+" files to be processed.") 
 
     return(RFI_files_to_be_processed)
 
@@ -64,11 +67,13 @@ def determine_all_RFI_files(path_to_current_RFI_files:str):
     :param path_to_processed_RFI_files: This is the path to write to all the RFI files
     :return: Returns RFI_files_to_be_processed, which is all the files that need to be processed
     """
+    print("User has selected to process all files in the given directory.")
     RFI_files_to_be_processed = []
     # This for loop goes through all the RFI files still in sdfits and that haven't been archived, finds those that needs to be processed, and appends them to RFI_files_to_be_processed        
     for current_RFI_file in os.listdir(path_to_current_RFI_files): 
         if current_RFI_file.startswith("TRFI"):
             RFI_files_to_be_processed.append(current_RFI_file)
+    print("Found files to be processed. Found "+str(len(RFI_files_to_be_processed))+" files to be processed.") 
     return(RFI_files_to_be_processed)
 
 
@@ -314,4 +319,9 @@ def main():
         print("All files uploaded to database")
     
 if __name__ == '__main__': 
+    import ptvsd 
+    # Allow other computers to attach to ptvsd at this IP address and port. 
+    # (Remove this is not running through debugger)
+    ptvsd.enable_attach(address=('10.16.96.210', 3001), redirect_output=True) 
+    ptvsd.wait_for_attach()
     main()
