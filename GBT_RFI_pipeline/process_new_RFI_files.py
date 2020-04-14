@@ -239,6 +239,7 @@ def add_slash_if_needed(path):
     # Tired of forgetting to put '/' at the end of my path and having it break everything
     if path[-1] != '/':
         path += '/'
+    return(path)
 
 def main():
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
@@ -258,7 +259,8 @@ def main():
     if not args.output_directory:
         output_directory = "./"
     else: 
-        output_directory = add_slash_if_needed(args.output_directory)
+        output_directory = args.output_directory
+        output_directory = add_slash_if_needed(output_directory)
 
 
     if args.upload_to_database: 
@@ -269,7 +271,8 @@ def main():
         connection_manager = rfitrends.connection_manager.connection_manager(host_name,database)     
    
     if args.skipalreadyprocessed:
-        path_to_processed_RFI_files = add_slash_if_needed(args.skipalreadyprocessed)
+        skipalreadyprocessed = args.skipalreadyprocessed
+        path_to_processed_RFI_files = add_slash_if_needed(skipalreadyprocessed)
         # If you specified 'output_directory' as the path to processed RFI files, then we need to check that you also specified the output_directory flag
         if path_to_processed_RFI_files == 'output_directory/':
             if args.output_directory is None: 
@@ -278,6 +281,8 @@ def main():
             # If you did, then we can set the path to the output directory given
             else:
                 path_to_processed_RFI_files = output_directory
+        print(path_to_current_RFI_files)
+        print(path_to_processed_RFI_files)
         # Regardless of where you get the path to processed RFI files, you need to then get the data to be processed from each file
         RFI_files_to_be_processed = determine_new_RFI_files(path_to_current_RFI_files,path_to_processed_RFI_files)
         # Get the data to be processed from each file
