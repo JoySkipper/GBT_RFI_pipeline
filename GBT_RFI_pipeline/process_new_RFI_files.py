@@ -238,7 +238,7 @@ def analyze_file(file_to_process,output_directory):
 def add_slash_if_needed(path):
     # Tired of forgetting to put '/' at the end of my path and having it break everything
     if path[-1] != '/':
-        path = path += '/'
+        path += '/'
 
 def main():
     parser = argparse.ArgumentParser(description="Processes new RFI files from the Green Bank Telescope and prints them as .txt files to the current directory")
