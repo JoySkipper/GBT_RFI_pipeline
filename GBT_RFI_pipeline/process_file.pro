@@ -11,10 +11,10 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
                 zfactor=zfactor, instance=instance, makegifs=makegifs, makefile=makefile, ka=ka, $
                 nbox=nbox, tau=tau, ap_eff=ap_eff, fltrParms=fltrParms, blnkWdth=blnkWdth, $
                 blnkChans=blnkChans, blnkFreqs=blnkFreqs, flagFreqs=flagFreqs, colors=colors, pols=pols, $
-                calseqList=calseqList,output_file=output_file
+                calseqList=calseqList,output_file=output_file, temp_path=temp_path
     CATCH, Error_status 
     if Error_status NE 0 then begin
-        openw, status_file, output_file+'stat.txt',/GET_LUN
+        openw, status_file, temp_path+'stat.txt',/GET_LUN
         printf, status_file, "bad_data"
         print,Error_status
         FREE_LUN, status_file
@@ -31,8 +31,8 @@ pro process_file,scanList, ifmax=ifmax, fdnum=fdnum, intnum=intnum, nzoom=nzoom,
     widget_control, mystate.main, /DESTROY
     print, "plot closed" 
     ; open the next file
-    openw, status_file, output_file+'stat.txt',/GET_LUN
-    print, 'writing status to file '+output_file+'stat.txt...'
+    openw, status_file, temp_path+'stat.txt',/GET_LUN
+    print, 'writing status to file '+temp_path+'stat.txt...'
     ; print to file 
     if status then begin
         print,'printing '+status

@@ -204,7 +204,7 @@ def analyze_file(file_to_process,output_directory):
     temp_file.write('.compile '+path+'rfiDisplay_wilsonedit.pro\n')
     temp_file.write('.compile '+path+'process_file\n')
     temp_file.write('offline,  \''+str(file_to_process["filename"])+'\' \n')
-    temp_file.write('process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, output_file=\''+temp_path+'\', /blnkChans, /makefile')
+    temp_file.write('process_file, '+str(file_to_process["list_of_scans"])+', fdnum='+str(file_to_process["number_of_feeds"])+'-1, ymax='+str(file_to_process["ymax"])+', ifmax = '+str(file_to_process["number_of_IFs"])+'-1, nzoom = 0, output_file=\''+output_directory+'\', temp_path=\''+temp_path+'\', /blnkChans, /makefile')
     if file_to_process['frontend'] == 'Rcvr26_40':
         temp_file.write(', /ka\n')
     else:
