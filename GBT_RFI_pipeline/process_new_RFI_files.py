@@ -332,8 +332,4 @@ def main():
     
 if __name__ == '__main__': 
     import ptvsd 
-    # Allow other computers to attach to ptvsd at this IP address and port. 
-    # (Remove this is not running through debugger)
-    ptvsd.enable_attach(address=('10.16.96.210', 3001), redirect_output=True) 
-    ptvsd.wait_for_attach()
     main()
