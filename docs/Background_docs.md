@@ -45,7 +45,7 @@ Next, the script goes to read, line by line, the RFI_file_parameters.csv that ha
 
 It then takes the number of scans, given by the .csv file, and creates a list of those scans in ascending order so that it can be the proper input for the rfiscans_mod. For example, if there are 3 scans, it makes a list such as [1,2,3]. 
 
-### Note: We are able to use all scans because rfiscans_mod cannot handle bad scans or skip over them. In version 1.0 of this package, the script will not automatically use all scans but instead skip over those bad scans as well. Currently, it throws out any files that contain any bad scans. 
+### Note: We are able to use all scans because rfiscans_mod cannot handle bad scans or skip over them. Currently, it throws out any files that contain any bad scans. 
 
 After this, the script calculates the ymax value for the given file, by comparing the receiver name and seeing if it is in the ymax100 list or the ymax10 list that was created earlier. 
 
